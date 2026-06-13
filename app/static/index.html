@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAS Monitor</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-card: #1e2a45;
+  --bg-card-hover: #253352;
+  --text-primary: #e0e0e0;
+  --text-secondary: #8892a4;
+  --accent-green: #4caf50;
+  --accent-blue: #2196f3;
+  --accent-orange: #ff9800;
+  --accent-red: #f44336;
+  --accent-purple: #9c27b0;
+  --accent-cyan: #00bcd4;
+  --border-color: #2a3a5e;
+  --tab-active: #2196f3;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+.header {
+  background: var(--bg-secondary);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-title { font-size: 18px; font-weight: 600; color: var(--accent-cyan); }
+.header-status { display: flex; gap: 16px; font-size: 12px; color: var(--text-secondary); }
+.status-item { display: flex; align-items: center; gap: 4px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.tab-bar {
+  display: flex;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  overflow-x: auto;
+}
+.tab-item {
+  padding: 12px 20px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+.tab-item.active { color: var(--tab-active); border-bottom-color: var(--tab-active); }
+.tab-item:hover { color: var(--text-primary); }
+.tab-content { display: none; padding: 16px; max-width: 1400px; margin: 0 auto; }
+.tab-content.active { display: block; }
+.monitor-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 16px; }
+@media(min-width:768px){ .monitor-grid{grid-template-columns:repeat(4,1fr);} }
+.stat-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--border-color);
+}
+.stat-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.stat-card-title { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; }
+.stat-card-icon { font-size: 18px; }
+.stat-card-value { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+.stat-card-sub { font-size: 11px; color: var(--text-secondary); }
+.chart-area {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 16px;
+}
+.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.chart-title { font-size: 14px; font-weight: 600; }
+.chart-legend { display: flex; gap: 12px; font-size: 12px; }
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+.chart-canvas { width: 100%; height: 150px; }
+.chart-canvas svg { width: 100%; height: 100%; }
+.disk-list { display: grid; gap: 8px; }
+.disk-item { background: var(--bg-card); border-radius: 8px; padding: 12px 16px; border: 1px solid var(--border-color); }
+.disk-item-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+.disk-bar { height: 6px; background: var(--border-color); border-radius: 3px; overflow: hidden; }
+.disk-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+/* Torrent Tab */
+.torrent-sub-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.torrent-sub-tab {
+  padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500;
+  cursor: pointer; background: var(--bg-card); color: var(--text-secondary);
+  border: 1px solid var(--border-color); transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+}
+.torrent-sub-tab.active { background: var(--bg-card-hover); color: var(--text-primary); border-color: var(--accent-blue); }
+.sub-tab-badge { background: var(--border-color); padding: 1px 7px; border-radius: 10px; font-size: 11px; }
+.torrent-sub-tab.active .sub-tab-badge { background: var(--accent-blue); color: white; }
+.client-panel { display: none; }
+.client-panel.active { display: block; }
+.speed-bar {
+  display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 12px; padding: 10px 16px;
+  background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color); font-size: 13px;
+}
+.speed-item { display: flex; align-items: center; gap: 6px; }
+.speed-down { color: var(--accent-green); }
+.speed-up { color: var(--accent-blue); }
+.torrent-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+.torrent-search { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 12px; color: var(--text-primary); font-size: 13px; width: 200px; outline: none; }
+.torrent-search:focus { border-color: var(--accent-blue); }
+.torrent-controls { display: flex; gap: 8px; }
+.btn { padding: 8px 16px; border-radius: 6px; border: none; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+.btn-primary { background: var(--accent-blue); color: white; }
+.btn-warning { background: var(--accent-orange); color: white; }
+.btn-success { background: var(--accent-green); color: white; }
+.btn-danger { background: var(--accent-red); color: white; }
+.torrent-list { display: grid; gap: 8px; }
+.torrent-card { background: var(--bg-card); border-radius: 8px; padding: 12px 16px; border: 1px solid var(--border-color); }
+.torrent-card:hover { background: var(--bg-card-hover); }
+.torrent-name { font-size: 14px; font-weight: 500; margin-bottom: 8px; word-break: break-all; line-height: 1.4; }
+.torrent-meta { display: grid; grid-template-columns: repeat(2,1fr); gap: 4px 12px; font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+.torrent-progress { height: 4px; background: var(--border-color); border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
+.torrent-progress-fill { height: 100%; border-radius: 2px; }
+.torrent-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+.tag-downloading { background: #1b5e20; color: #81c784; }
+.tag-seeding { background: #0d47a1; color: #64b5f6; }
+.tag-paused { background: #4a4a4a; color: #bbb; }
+.tag-error { background: #b71c1c; color: #ef9a9a; }
+.tag-checking { background: #4a148c; color: #ce93d8; }
+/* Movie Tab */
+.movie-section { margin-bottom: 24px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.section-title { font-size: 16px; font-weight: 600; }
+.movie-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
+.movie-card { flex-shrink: 0; width: 130px; }
+.movie-poster {
+  width: 130px; height: 190px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border-color);
+  display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 8px;
+  position: relative; overflow: hidden;
+}
+.movie-poster img { width: 100%; height: 100%; object-fit: cover; }
+.movie-rating { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px; font-size: 11px; color: var(--accent-orange); font-weight: 600; }
+.movie-title { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.movie-year { font-size: 11px; color: var(--text-secondary); }
+/* News Tab */
+.news-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+.news-tab { padding: 6px 14px; border-radius: 16px; font-size: 12px; cursor: pointer; white-space: nowrap; background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-color); }
+.news-tab.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+.news-list { display: grid; gap: 10px; }
+.news-item { background: var(--bg-card); border-radius: 8px; padding: 12px 16px; border: 1px solid var(--border-color); cursor: pointer; }
+.news-item:hover { background: var(--bg-card-hover); }
+.news-item-title { font-size: 14px; font-weight: 500; margin-bottom: 6px; line-height: 1.4; }
+.news-item-meta { font-size: 11px; color: var(--text-secondary); display: flex; gap: 8px; }
+.news-source-tag { padding: 1px 6px; background: var(--bg-secondary); border-radius: 3px; font-size: 10px; }
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: var(--bg-card); border-radius: 12px; padding: 24px; width: 90%; max-width: 400px; border: 1px solid var(--border-color); }
+.modal-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+.form-group { margin-bottom: 12px; }
+.form-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: block; }
+.form-input { width: 100%; padding: 8px 12px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 14px; outline: none; }
+.form-input:focus { border-color: var(--accent-blue); }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+.loading { text-align: center; padding: 40px; color: var(--text-secondary); }
+@media(min-width:1024px){
+  .tab-content{padding:24px;}
+  .torrent-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;word-break:normal;}
+  .torrent-meta{display:flex;grid-template-columns:none;gap:12px;}
+  .news-list{grid-template-columns:repeat(2,1fr);}
+  .movie-card{width:150px;} .movie-poster{width:150px;height:220px;}
+}
+@media(max-width:600px){
+  .torrent-toolbar{flex-direction:column;align-items:stretch;}
+  .torrent-search{width:100%;}
+  .torrent-controls{justify-content:space-between;}
+}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:3px;}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-title">NAS Monitor</div>
+  <div class="header-status">
+    <div class="status-item"><span class="status-dot"></span><span id="sysOs">-</span></div>
+    <div class="status-item" id="sysUptime">Uptime: -</div>
+  </div>
+</header>
+<nav class="tab-bar">
+  <div class="tab-item active" onclick="switchTab(0)">系统监控</div>
+  <div class="tab-item" onclick="switchTab(1)">种子任务</div>
+  <div class="tab-item" onclick="switchTab(2)">影视推荐</div>
+  <div class="tab-item" onclick="switchTab(3)">新闻资讯</div>
+</nav>
+
+<!-- Tab1: System -->
+<div class="tab-content active" id="tab-system">
+  <div class="monitor-grid">
+    <div class="stat-card">
+      <div class="stat-card-header"><span class="stat-card-title">CPU</span><span class="stat-card-icon">🖥️</span></div>
+      <div class="stat-card-value" style="color:var(--accent-blue)" id="cpuVal">-%</div>
+      <div class="stat-card-sub" id="cpuInfo">-</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-header"><span class="stat-card-title">内存</span><span class="stat-card-icon">💾</span></div>
+      <div class="stat-card-value" style="color:var(--accent-green)" id="memVal">-%</div>
+      <div class="stat-card-sub" id="memInfo">-</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-header"><span class="stat-card-title">下载</span><span class="stat-card-icon">⬇️</span></div>
+      <div class="stat-card-value" style="color:var(--accent-cyan)" id="dlVal">-</div>
+      <div class="stat-card-sub" id="dlInfo">-</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-header"><span class="stat-card-title">上传</span><span class="stat-card-icon">⬆️</span></div>
+      <div class="stat-card-value" style="color:var(--accent-orange)" id="ulVal">-</div>
+      <div class="stat-card-sub" id="ulInfo">-</div>
+    </div>
+  </div>
+  <div class="chart-area">
+    <div class="chart-header">
+      <span class="chart-title">网络流量</span>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-cyan)"></div>下载</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-orange)"></div>上传</div>
+      </div>
+    </div>
+    <div class="chart-canvas"><svg id="netChart" viewBox="0 0 600 150" preserveAspectRatio="none"></svg></div>
+  </div>
+  <div class="chart-area">
+    <div class="chart-header"><span class="chart-title">磁盘使用</span></div>
+    <div class="disk-list" id="diskList"></div>
+  </div>
+</div>
+
+<!-- Tab2: Torrents -->
+<div class="tab-content" id="tab-torrent"></div>
+
+<!-- Tab3: Movies -->
+<div class="tab-content" id="tab-movie"></div>
+
+<!-- Tab4: News -->
+<div class="tab-content" id="tab-news"></div>
+
+<!-- Speed Limit Modal -->
+<div class="modal-overlay" id="speedModal">
+  <div class="modal">
+    <div class="modal-title">⚡ 设置限速</div>
+    <div class="form-group">
+      <label class="form-label">客户端</label>
+      <div class="form-input" id="modalClient" style="background:var(--bg-card);padding:8px 12px;">-</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">下载限速 (KB/s，0=不限)</label>
+      <input type="number" class="form-input" id="modalDl" value="5120">
+    </div>
+    <div class="form-group">
+      <label class="form-label">上传限速 (KB/s，0=不限)</label>
+      <input type="number" class="form-input" id="modalUl" value="2048">
+    </div>
+    <div class="form-group">
+      <label class="form-label">持续时间（到期自动解除）</label>
+      <select class="form-input" id="modalDuration">
+        <option value="0">永久（跟随时间段规则）</option>
+        <option value="30">30 分钟</option>
+        <option value="60" selected>1 小时</option>
+        <option value="120">2 小时</option>
+        <option value="240">4 小时</option>
+        <option value="480">8 小时</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" style="background:var(--border-color);color:var(--text-primary);" onclick="hideModal()">取消</button>
+      <button class="btn btn-primary" onclick="applySpeedLimit()">应用限速</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// === Utils ===
+function formatBytes(bytes, decimals = 1) {
+  if (bytes === 0) return '0 B/s';
+  const k = 1024, sizes = ['B/s','KB/s','MB/s','GB/s'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+}
+function formatSize(bytes) {
+  if (bytes === 0) return '0 B';
+  const k = 1024, sizes = ['B','KB','MB','GB','TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+function formatEta(seconds) {
+  if (seconds <= 0 || seconds >= 8640000) return '∞';
+  const h = Math.floor(seconds / 3600), m = Math.floor((seconds % 3600) / 60);
+  return h > 0 ? `${h}h ${m}m` : `${m}min`;
+}
+
+// === Tab Switch ===
+function switchTab(index) {
+  document.querySelectorAll('.tab-item').forEach((el, i) => el.classList.toggle('active', i === index));
+  document.querySelectorAll('.tab-content').forEach((el, i) => el.classList.toggle('active', i === index));
+  if (index === 1 && !torrentLoaded) loadTorrents();
+  if (index === 2 && !movieLoaded) loadMovies();
+  if (index === 3 && !newsLoaded) loadNews();
+}
+
+// === Tab1: System Monitor ===
+let netHistory = [];
+const MAX_POINTS = 180;
+
+async function initSystem() {
+  try {
+    const resp = await fetch('/api/system/info');
+    const info = await resp.json();
+    document.getElementById('sysOs').textContent = info.os;
+    document.getElementById('sysUptime').textContent = 'Uptime: ' + info.uptime;
+    document.getElementById('cpuInfo').textContent = `${info.cpu_model} · ${info.cpu_cores}C/${info.cpu_threads}T`;
+    document.getElementById('memInfo').textContent = `- / ${info.total_memory_gb} GB`;
+  } catch(e) { console.error('System info error:', e); }
+  connectWS();
+}
+
+function connectWS() {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const ws = new WebSocket(`${proto}//${location.host}/api/system/ws`);
+  ws.onmessage = (e) => {
+    const d = JSON.parse(e.data);
+    document.getElementById('cpuVal').textContent = d.cpu.percent + '%';
+    document.getElementById('memVal').textContent = d.memory.percent + '%';
+    document.getElementById('memInfo').textContent = `${d.memory.used_gb} GB / ${d.memory.total_gb} GB`;
+    document.getElementById('dlVal').textContent = formatBytes(d.network.download_speed);
+    document.getElementById('ulVal').textContent = formatBytes(d.network.upload_speed);
+    document.getElementById('dlInfo').textContent = '总计: ' + formatSize(d.network.bytes_recv);
+    document.getElementById('ulInfo').textContent = '总计: ' + formatSize(d.network.bytes_sent);
+    netHistory.push({ dl: d.network.download_speed, ul: d.network.upload_speed });
+    if (netHistory.length > MAX_POINTS) netHistory.shift();
+    drawNetChart();
+    renderDisks(d.disks);
+  };
+  ws.onclose = () => setTimeout(connectWS, 3000);
+  ws.onerror = () => ws.close();
+}
+
+function drawNetChart() {
+  const svg = document.getElementById('netChart');
+  const w = 600, h = 150;
+  const pts = netHistory;
+  if (pts.length < 2) return;
+  const maxVal = Math.max(...pts.map(p => Math.max(p.dl, p.ul)), 1);
+  const stepX = w / (MAX_POINTS - 1);
+
+  function toPath(key) {
+    return pts.map((p, i) => {
+      const x = i * stepX;
+      const y = h - (p[key] / maxVal) * (h - 10);
+      return (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+  }
+  function toArea(key) {
+    const line = toPath(key);
+    const lastX = ((pts.length - 1) * stepX).toFixed(1);
+    return line + ` L${lastX},${h} L0,${h} Z`;
+  }
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="dlG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(0,188,212,0.3)"/><stop offset="100%" stop-color="rgba(0,188,212,0)"/></linearGradient>
+      <linearGradient id="ulG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(255,152,0,0.2)"/><stop offset="100%" stop-color="rgba(255,152,0,0)"/></linearGradient>
+    </defs>
+    <path d="${toArea('dl')}" fill="url(#dlG)"/>
+    <path d="${toPath('dl')}" fill="none" stroke="var(--accent-cyan)" stroke-width="1.5"/>
+    <path d="${toArea('ul')}" fill="url(#ulG)"/>
+    <path d="${toPath('ul')}" fill="none" stroke="var(--accent-orange)" stroke-width="1.5"/>
+  `;
+}
+
+function renderDisks(disks) {
+  const el = document.getElementById('diskList');
+  el.innerHTML = disks.map(d => {
+    const color = d.percent > 85 ? 'var(--accent-red)' : d.percent > 70 ? 'var(--accent-orange)' : 'var(--accent-green)';
+    return `<div class="disk-item">
+      <div class="disk-item-header"><span>${d.device} · ${d.mountpoint}</span><span>${d.used_gb} GB / ${d.total_gb} GB</span></div>
+      <div class="disk-bar"><div class="disk-bar-fill" style="width:${d.percent}%;background:${color}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// === Tab2: Torrents ===
+let torrentLoaded = false;
+let currentClient = 'qb';
+
+async function loadTorrents() {
+  torrentLoaded = true;
+  const container = document.getElementById('tab-torrent');
+  container.innerHTML = `
+    <div class="torrent-sub-tabs">
+      <div class="torrent-sub-tab active" onclick="switchClient('qb')">🟦 qBittorrent <span class="sub-tab-badge" id="qb-count">-</span></div>
+      <div class="torrent-sub-tab" onclick="switchClient('tr')">🟩 Transmission <span class="sub-tab-badge" id="tr-count">-</span></div>
+    </div>
+    <div class="client-panel active" id="panel-qb"><div class="loading">加载中...</div></div>
+    <div class="client-panel" id="panel-tr"><div class="loading">加载中...</div></div>
+  `;
+  await Promise.all([fetchClient('qb'), fetchClient('tr')]);
+}
+
+function switchClient(client) {
+  currentClient = client;
+  document.querySelectorAll('.torrent-sub-tab').forEach((t,i) => t.classList.toggle('active', (client==='qb'?0:1)===i));
+  document.querySelectorAll('.client-panel').forEach((p,i) => p.classList.toggle('active', (client==='qb'?0:1)===i));
+}
+
+async function fetchClient(client) {
+  try {
+    const resp = await fetch(`/api/torrent/${client}/list`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    document.getElementById(`${client}-count`).textContent = data.torrents.length;
+    renderClientPanel(client, data);
+  } catch(e) {
+    document.getElementById(`${client}-count`).textContent = '-';
+    document.getElementById(`panel-${client}`).innerHTML = `<div class="loading" style="color:var(--accent-red)">连接失败: ${e.message}</div>`;
+  }
+}
+
+function renderClientPanel(client, data) {
+  const s = data.stats;
+  const sl = s.speed_limit || {};
+  const limitText = sl.enabled ? `限速: ↓${Math.round(sl.download/1024)}KB/s ↑${Math.round(sl.upload/1024)}KB/s` : '限速: 未开启';
+  const limitColor = sl.enabled ? 'var(--accent-red)' : 'var(--accent-orange)';
+  const activeCount = data.torrents.filter(t => t.download_speed > 0 || t.upload_speed > 0).length;
+
+  let html = `
+    <div class="speed-bar">
+      <div class="speed-item speed-down">⬇️ ${formatBytes(s.download_speed)}</div>
+      <div class="speed-item speed-up">⬆️ ${formatBytes(s.upload_speed)}</div>
+      <div class="speed-item" style="color:var(--text-secondary)">活跃 ${s.active} · 做种 ${s.seeding} · 暂停 ${s.paused}</div>
+      <div class="speed-item" style="color:${limitColor};margin-left:auto">${limitText}</div>
+    </div>
+    <div class="torrent-toolbar">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="text" class="torrent-search" placeholder="🔍 搜索种子..." oninput="filterTorrents('${client}',this.value)">
+        <div class="news-tabs" style="margin-bottom:0">
+          <div class="news-tab active" onclick="filterActivity('${client}','active',this)">活跃 (${activeCount})</div>
+          <div class="news-tab" onclick="filterActivity('${client}','all',this)">全部 (${data.torrents.length})</div>
+        </div>
+      </div>
+      <div class="torrent-controls">
+        <button class="btn btn-warning" onclick="showModal('${client}')">⚡ 限速</button>
+        <button class="btn btn-success" onclick="removeLimit('${client}')">✅ 解除</button>
+        <button class="btn btn-primary" onclick="pauseAll('${client}')">⏸️ 暂停</button>
+        <button class="btn btn-success" onclick="resumeAll('${client}')">▶️ 恢复</button>
+      </div>
+    </div>
+    <div class="torrent-list" id="list-${client}">`;
+
+  html += data.torrents.map(t => renderTorrentCard(t)).join('');
+  html += '</div>';
+  document.getElementById(`panel-${client}`).innerHTML = html;
+  filterActivity(client, 'active');
+}
+
+function renderTorrentCard(t) {
+  const pct = Math.round(t.progress * 100);
+  const stateTag = {
+    downloading: `<span class="tag tag-downloading">下载中 ${pct}%</span>`,
+    seeding: '<span class="tag tag-seeding">做种中</span>',
+    paused: '<span class="tag tag-paused">已暂停</span>',
+    error: '<span class="tag tag-error">错误</span>',
+    checking: '<span class="tag tag-checking">校验中</span>',
+    queued: '<span class="tag tag-paused">排队中</span>',
+  }[t.state] || `<span class="tag">${t.state}</span>`;
+  const progressBg = t.state === 'seeding' ? 'var(--accent-blue)' : 'linear-gradient(90deg,var(--accent-green),var(--accent-cyan))';
+  const etaStr = t.state === 'downloading' ? `<span>⏱️ ${formatEta(t.eta)}</span>` : `<span>比率 ${t.ratio}</span>`;
+
+  const isActive = (t.download_speed > 0 || t.upload_speed > 0) ? '1' : '0';
+  return `<div class="torrent-card" data-name="${t.name.toLowerCase()}" data-active="${isActive}">
+    <div class="torrent-name">${t.name}</div>
+    <div class="torrent-meta">
+      <span>📦 ${formatSize(t.size)}</span>
+      <span>⬇️ ${formatBytes(t.download_speed)}</span>
+      <span>⬆️ ${formatBytes(t.upload_speed)}</span>
+      <span>👥 ${t.seeds} / ${t.peers}</span>
+      ${etaStr}
+    </div>
+    <div class="torrent-progress"><div class="torrent-progress-fill" style="width:${pct}%;background:${progressBg}"></div></div>
+    <div class="torrent-tags">${stateTag}${t.category ? `<span class="tag" style="background:#1a237e;color:#90caf9">${t.category}</span>` : ''}</div>
+  </div>`;
+}
+
+function filterTorrents(client, query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll(`#list-${client} .torrent-card`).forEach(card => {
+    card.style.display = card.dataset.name.includes(q) ? '' : 'none';
+  });
+}
+
+function filterActivity(client, mode, el) {
+  if (el) {
+    el.parentElement.querySelectorAll('.news-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+  document.querySelectorAll(`#list-${client} .torrent-card`).forEach(card => {
+    if (mode === 'active') {
+      card.style.display = card.dataset.active === '1' ? '' : 'none';
+    } else {
+      card.style.display = '';
+    }
+  });
+}
+
+// === Torrent Controls ===
+let modalClient = 'qb';
+function showModal(client) { modalClient = client; document.getElementById('modalClient').textContent = client === 'qb' ? 'qBittorrent' : 'Transmission'; document.getElementById('speedModal').classList.add('show'); }
+function hideModal() { document.getElementById('speedModal').classList.remove('show'); }
+async function applySpeedLimit() {
+  const dl = parseInt(document.getElementById('modalDl').value) || 0;
+  const ul = parseInt(document.getElementById('modalUl').value) || 0;
+  const duration = parseInt(document.getElementById('modalDuration').value) || 0;
+  await fetch(`/api/torrent/${modalClient}/speed-limit`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({download:dl,upload:ul,duration:duration}) });
+  hideModal(); fetchClient(modalClient);
+}
+async function removeLimit(client) { await fetch(`/api/torrent/${client}/speed-limit/remove`,{method:'POST'}); fetchClient(client); }
+async function pauseAll(client) { await fetch(`/api/torrent/${client}/pause-all`,{method:'POST'}); setTimeout(()=>fetchClient(client),1000); }
+async function resumeAll(client) { await fetch(`/api/torrent/${client}/resume-all`,{method:'POST'}); setTimeout(()=>fetchClient(client),1000); }
+
+// === Tab3: Movies ===
+let movieLoaded = false;
+async function loadMovies() {
+  movieLoaded = true;
+  const container = document.getElementById('tab-movie');
+  container.innerHTML = '<div class="loading">加载中...</div>';
+  try {
+    const [trending, topRated, dbMovie, dbTv] = await Promise.all([
+      fetch('/api/movies/trending').then(r=>r.json()),
+      fetch('/api/movies/top-rated').then(r=>r.json()),
+      fetch('/api/movies/douban/movie-hot').then(r=>r.json()).catch(()=>[]),
+      fetch('/api/movies/douban/tv-hot').then(r=>r.json()).catch(()=>[]),
+    ]);
+    let html = '';
+    html += renderMovieSection('🔥 热门电影 (TMDB)', trending.movies || []);
+    html += renderMovieSection('📺 热门剧集 (TMDB)', trending.tv || []);
+    html += renderDoubanSection('🎯 豆瓣热门电影', dbMovie);
+    html += renderDoubanSection('🎯 豆瓣热门剧集', dbTv);
+    html += renderMovieSection('⭐ TMDB 高分', topRated.movies || []);
+    container.innerHTML = html || '<div class="loading">暂无数据，请配置 TMDB API Key</div>';
+  } catch(e) { container.innerHTML = `<div class="loading" style="color:var(--accent-red)">加载失败: ${e.message}</div>`; }
+}
+
+function renderMovieSection(title, items) {
+  if (!items.length) return '';
+  return `<div class="movie-section"><div class="section-header"><span class="section-title">${title}</span></div>
+    <div class="movie-scroll">${items.map(m => `
+      <div class="movie-card">
+        <div class="movie-poster">${m.poster_url ? `<img src="${m.poster_url}" loading="lazy" alt="${m.title}">` : '🎬'}<div class="movie-rating">⭐ ${m.rating}</div></div>
+        <div class="movie-title" title="${m.title}">${m.title}</div>
+        <div class="movie-year">${m.year} · ${m.media_type==='tv'?'剧集':'电影'}</div>
+      </div>`).join('')}
+    </div></div>`;
+}
+
+function renderDoubanSection(title, items) {
+  if (!items || !items.length) return '';
+  return `<div class="movie-section"><div class="section-header"><span class="section-title">${title}</span></div>
+    <div class="movie-scroll">${items.map(m => `
+      <div class="movie-card" onclick="window.open('${m.url}','_blank')" style="cursor:pointer">
+        <div class="movie-poster">${m.cover_url ? `<img src="${m.cover_url}" loading="lazy" alt="${m.title}">` : '🎬'}<div class="movie-rating">⭐ ${m.rating || '-'}</div></div>
+        <div class="movie-title" title="${m.title}">${m.title}</div>
+        <div class="movie-year">${m.card_subtitle || m.year || ''}</div>
+      </div>`).join('')}
+    </div></div>`;
+}
+
+// === Tab4: News ===
+let newsLoaded = false;
+let newsCategories = [];
+async function loadNews() {
+  newsLoaded = true;
+  const container = document.getElementById('tab-news');
+  container.innerHTML = '<div class="loading">加载中...</div>';
+  try {
+    const catResp = await fetch('/api/news/categories');
+    const catData = await catResp.json();
+    newsCategories = catData.categories || [];
+    const newsResp = await fetch('/api/news');
+    const newsData = await newsResp.json();
+    renderNews(container, newsData.items || []);
+  } catch(e) { container.innerHTML = `<div class="loading" style="color:var(--accent-red)">加载失败: ${e.message}</div>`; }
+}
+
+function renderNews(container, items) {
+  const tabs = ['全部', ...newsCategories].map((c,i) => `<div class="news-tab${i===0?' active':''}" onclick="filterNews('${c}')">${c==='全部'?'全部':c}</div>`).join('');
+  const refreshBtn = `<button class="btn btn-primary" onclick="refreshNews()" id="newsRefreshBtn" style="margin-left:auto;font-size:12px;padding:6px 12px;">🔄 刷新</button>`;
+  const allSources = [...new Set(items.map(n => n.source))];
+  const sourceFilter = `<div class="news-tabs" id="newsSourceFilter" style="margin-bottom:0"><div class="news-tab active" onclick="filterSource('全部')">全部来源</div>${allSources.map(s => `<div class="news-tab" onclick="filterSource('${s}')">${s}</div>`).join('')}</div>`;
+  const list = items.length ? items.map(n => `<div class="news-item" data-cat="${n.category}" data-source="${n.source}" onclick="window.open('${n.url}','_blank')">
+    <div class="news-item-title">${n.title}</div>
+    <div class="news-item-meta"><span class="news-source-tag">${n.category}</span><span>${n.source}</span><span>${n.published?timeAgo(n.published_ts):''}</span></div>
+  </div>`).join('') : '<div class="loading">暂无数据，等待后台刷新...</div>';
+  container.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;"><div class="news-tabs" style="margin-bottom:0" id="newsCatTabs">${tabs}</div>${refreshBtn}</div>${sourceFilter}<div class="news-list" id="newsList" style="margin-top:12px">${list}</div>`;
+}
+
+async function refreshNews() {
+  const btn = document.getElementById('newsRefreshBtn');
+  btn.textContent = '⏳ 刷新中...';
+  btn.disabled = true;
+  try {
+    await fetch('/api/news/refresh', { method: 'POST' });
+    const resp = await fetch('/api/news');
+    const data = await resp.json();
+    const container = document.getElementById('tab-news');
+    renderNews(container, data.items || []);
+  } catch(e) {
+    btn.textContent = '❌ 失败';
+  }
+}
+
+let currentNewsCat = '全部';
+let currentNewsSource = '全部';
+
+function filterNews(cat) {
+  currentNewsCat = cat;
+  currentNewsSource = '全部';
+  document.getElementById('newsCatTabs').querySelectorAll('.news-tab').forEach(t => t.classList.toggle('active', t.textContent === cat || (cat==='全部' && t.textContent==='全部')));
+  updateSourceFilter();
+  applyNewsFilter();
+}
+
+function filterSource(source) {
+  currentNewsSource = source;
+  document.getElementById('newsSourceFilter').querySelectorAll('.news-tab').forEach(t => t.classList.toggle('active', t.textContent === source || (source==='全部' && t.textContent==='全部来源')));
+  applyNewsFilter();
+}
+
+function updateSourceFilter() {
+  const items = document.querySelectorAll('#newsList .news-item');
+  const sources = new Set();
+  items.forEach(item => {
+    if (currentNewsCat === '全部' || item.dataset.cat === currentNewsCat) {
+      sources.add(item.dataset.source);
+    }
+  });
+  const srcArr = [...sources];
+  document.getElementById('newsSourceFilter').innerHTML = `<div class="news-tab active" onclick="filterSource('全部')">全部来源</div>${srcArr.map(s => `<div class="news-tab" onclick="filterSource('${s}')">${s}</div>`).join('')}`;
+}
+
+function applyNewsFilter() {
+  document.querySelectorAll('#newsList .news-item').forEach(item => {
+    const catMatch = currentNewsCat === '全部' || item.dataset.cat === currentNewsCat;
+    const srcMatch = currentNewsSource === '全部' || item.dataset.source === currentNewsSource;
+    item.style.display = (catMatch && srcMatch) ? '' : 'none';
+  });
+}
+
+function timeAgo(ts) {
+  if (!ts) return '';
+  const diff = Math.floor(Date.now()/1000 - ts);
+  if (diff < 3600) return Math.floor(diff/60) + '分钟前';
+  if (diff < 86400) return Math.floor(diff/3600) + '小时前';
+  return Math.floor(diff/86400) + '天前';
+}
+
+// === Auto Refresh ===
+setInterval(() => { if (torrentLoaded && document.querySelectorAll('.tab-item')[1].classList.contains('active')) { fetchClient(currentClient); } }, 5000);
+
+// === Init ===
+initSystem();
+</script>
+</body>
+</html>

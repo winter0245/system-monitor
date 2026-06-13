@@ -1,0 +1,34 @@
+# 敏感信息
+KNOWLEDGE.md
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# 缓存
+cache/
+
+# 日志
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 备份文件
+*_bak.*
+*.bak
+
+# Obsidian
+.obsidian/
+
+# 环境
+.env

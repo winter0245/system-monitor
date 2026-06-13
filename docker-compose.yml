@@ -1,0 +1,12 @@
+version: "3.8"
+services:
+  nas-monitor:
+    build: .
+    container_name: nas-monitor
+    ports:
+      - "8900:8900"
+    volumes:
+      - ./config.yaml:/app/config.yaml
+      - ./cache:/app/cache
+    network_mode: host
+    restart: unless-stopped
