@@ -71,6 +71,38 @@ class SpeedLimitScheduler:
         rule = self._get_active_rule()
         return rule.get("name", "无") if rule else "无规则"
 
+    def get_client_source(self, client: str) -> dict:
+        """返回指定客户端的限速来源信息"""
+        now = time.time()
+        override = self._manual_override.get(client)
+        if override:
+            if override["expire_at"] and now > override["expire_at"]:
+                pass  # 已过期，走兜底逻辑
+            else:
+                if override["download"] == 0 and override["upload"] == 0:
+                    return {
+                        "source": "manual",
+                        "label": "手动解除 · cooldown",
+                        "rule_name": None,
+                    }
+                return {
+                    "source": "manual",
+                    "label": "手动限速",
+                    "rule_name": None,
+                }
+        rule = self._get_active_rule()
+        if rule:
+            return {
+                "source": "schedule",
+                "label": f"定时 · {rule.get('name', '')}",
+                "rule_name": rule.get("name"),
+            }
+        return {
+            "source": "none",
+            "label": "不限速",
+            "rule_name": None,
+        }
+
     async def apply_limits(self):
         now = time.time()
         # 清理过期的手动限速

@@ -1,0 +1,20 @@
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "http://127.0.0.1:15721"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(open *)",
+      "Bash(pip3 install *)",
+      "Bash(curl -s http://localhost:8900/api/system/stats)",
+      "Bash(python -m json.tool)",
+      "Bash(curl *)",
+      "Bash(python3 -m json.tool)",
+      "Bash(chmod +x *)",
+      "Bash(python3 *)",
+      "Bash(/Users/10016217/.claude/skills/chrome-cdp/scripts/cdp.mjs list *)",
+      "Bash(/Users/10016217/.claude/skills/chrome-cdp/scripts/cdp.mjs html *)",
+      "Bash(/Users/10016217/.claude/skills/chrome-cdp/scripts/cdp.mjs eval *)"
+    ]
+  }
+}

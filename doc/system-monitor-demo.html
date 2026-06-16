@@ -574,6 +574,325 @@ body {
   color: var(--text-secondary);
 }
 
+/* ===== Tab5: PT Sites ===== */
+.pt-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pt-toolbar-left {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.pt-toolbar-right {
+  display: flex;
+  gap: 8px;
+}
+
+.pt-site-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+  .pt-site-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1200px) {
+  .pt-site-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.pt-site-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s;
+}
+
+.pt-site-card:hover {
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+}
+
+.pt-site-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.pt-site-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pt-site-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.pt-site-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.pt-site-url {
+  font-size: 11px;
+  color: var(--text-secondary);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pt-site-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.pt-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.pt-status-badge.online {
+  background: #1b5e20;
+  color: #81c784;
+}
+
+.pt-status-badge.offline {
+  background: #b71c1c;
+  color: #ef9a9a;
+}
+
+.pt-status-badge.unknown {
+  background: #4a4a4a;
+  color: #bbb;
+}
+
+.pt-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.pt-status-badge.online .pt-status-dot { background: #81c784; }
+.pt-status-badge.offline .pt-status-dot { background: #ef9a9a; }
+.pt-status-badge.unknown .pt-status-dot { background: #bbb; }
+
+.pt-last-visit {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.pt-site-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pt-stat-item {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.pt-stat-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pt-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.pt-stat-change {
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+.pt-stat-change.up { color: var(--accent-green); }
+.pt-stat-change.down { color: var(--accent-red); }
+
+.pt-site-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
+}
+
+.btn-visit {
+  background: var(--accent-blue);
+  color: white;
+}
+
+.btn-visit:hover { background: #1976d2; }
+
+.btn-refresh-site {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-refresh-site:hover { background: var(--border-color); }
+
+.btn-edit {
+  background: var(--bg-card-hover);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-edit:hover { background: var(--border-color); }
+
+/* Visit Log */
+.pt-log-section {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 16px;
+}
+
+.pt-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.pt-log-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pt-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.pt-log-table th {
+  text-align: left;
+  padding: 8px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.pt-log-table td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(42, 58, 94, 0.4);
+  white-space: nowrap;
+}
+
+.pt-log-table tr:hover td {
+  background: rgba(33, 150, 243, 0.03);
+}
+
+.pt-log-success {
+  color: #81c784;
+}
+
+.pt-log-fail {
+  color: #ef9a9a;
+}
+
+/* Schedule Config */
+.pt-schedule-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 500;
+  background: #1a237e;
+  color: #9fa8da;
+}
+
+/* Empty State */
+.pt-empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}
+
+.pt-empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.pt-empty-text {
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+/* Site Form Modal */
+.pt-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 500px) {
+  .pt-form-grid { grid-template-columns: 1fr; }
+}
+
+.pt-form-full {
+  grid-column: 1 / -1;
+}
+
+textarea.form-input {
+  resize: vertical;
+  min-height: 80px;
+  font-family: monospace;
+  font-size: 12px;
+}
+
 /* ===== Tab4: News ===== */
 .news-tabs {
   display: flex;
@@ -765,6 +1084,7 @@ body {
   <div class="tab-item" onclick="switchTab(1)">种子任务</div>
   <div class="tab-item" onclick="switchTab(2)">影视推荐</div>
   <div class="tab-item" onclick="switchTab(3)">新闻资讯</div>
+  <div class="tab-item" onclick="switchTab(4)">PT 管理</div>
 </nav>
 
 <!-- Tab1: System Monitor -->
@@ -1308,6 +1628,274 @@ body {
   </div>
 </div>
 
+<!-- Tab5: PT Sites Management -->
+<div class="tab-content">
+  <!-- Toolbar -->
+  <div class="pt-toolbar">
+    <div class="pt-toolbar-left">
+      <button class="btn btn-primary" onclick="showPtSiteForm()">＋ 添加站点</button>
+      <button class="btn btn-success" onclick="triggerAllVisit()">🔄 全局刷新</button>
+    </div>
+    <div class="pt-toolbar-right">
+      <span style="font-size:12px;color:var(--text-secondary);">
+        下次扫描: <span style="color:var(--accent-cyan);">08:00 · 14:00 · 20:00</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Site Cards Grid -->
+  <div class="pt-site-grid" id="ptSiteGrid">
+    <!-- Site 1: M-Team -->
+    <div class="pt-site-card">
+      <div class="pt-site-card-header">
+        <div class="pt-site-info">
+          <div class="pt-site-avatar" style="background:#1565c0;color:#90caf9;">M</div>
+          <div>
+            <div class="pt-site-name">M-Team</div>
+            <div class="pt-site-url">kp.m-team.cc</div>
+            <div style="margin-top:4px">
+              <span class="pt-schedule-tag">⏰ 每天 3 次</span>
+            </div>
+          </div>
+        </div>
+        <div class="pt-site-status">
+          <div class="pt-status-badge online">
+            <span class="pt-status-dot"></span> 正常
+          </div>
+          <div class="pt-last-visit">最后访问: 2小时前</div>
+        </div>
+      </div>
+      <div class="pt-site-stats">
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">上传量</div>
+          <div class="pt-stat-value" style="color: var(--accent-blue);">12.8 TB</div>
+          <div class="pt-stat-change up">↑ 86.2 GB (今日)</div>
+        </div>
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">下载量</div>
+          <div class="pt-stat-value" style="color: var(--accent-orange);">3.2 TB</div>
+          <div class="pt-stat-change down">↑ 15.6 GB (今日)</div>
+        </div>
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">做种积分</div>
+          <div class="pt-stat-value" style="color: var(--accent-green);">1,285,600</div>
+          <div class="pt-stat-change up">↑ 8,200 (今日)</div>
+        </div>
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">魔力值</div>
+          <div class="pt-stat-value" style="color: var(--accent-purple);">892,450</div>
+          <div class="pt-stat-change up">↑ 5,100 (今日)</div>
+        </div>
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">分享率</div>
+          <div class="pt-stat-value" style="color: var(--accent-cyan);">3.98</div>
+          <div class="pt-stat-change up">↑ 0.02</div>
+        </div>
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">做种数</div>
+          <div class="pt-stat-value" style="color: var(--text-primary);">156</div>
+          <div class="pt-stat-change">--</div>
+        </div>
+      </div>
+      <div class="pt-site-actions">
+        <button class="btn-sm btn-visit" onclick="visitSite('mteam')">🔗 跳转站点</button>
+        <button class="btn-sm btn-refresh-site" onclick="refreshSite('mteam')">🔄 刷新数据</button>
+        <button class="btn-sm btn-edit" onclick="editPtSite('mteam')">⚙️ 编辑</button>
+      </div>
+    </div>
+
+    <!-- Site 2: HDSky -->
+    <div class="pt-site-card">
+      <div class="pt-site-card-header">
+        <div class="pt-site-info">
+          <div class="pt-site-avatar" style="background:#6a1b9a;color:#ce93d8;">H</div>
+          <div>
+            <div class="pt-site-name">HDSky</div>
+            <div class="pt-site-url">hdsky.me</div>
+            <div style="margin-top:4px">
+              <span class="pt-schedule-tag">⏰ 每天 2 次</span>
+            </div>
+          </div>
+        </div>
+        <div class="pt-site-status">
+          <div class="pt-status-badge online">
+            <span class="pt-status-dot"></span> 正常
+          </div>
+          <div class="pt-last-visit">最后访问: 5小时前</div>
+        </div>
+      </div>
+      <div class="pt-site-stats">
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">上传量</div>
+          <div class="pt-stat-value" style="color: var(--accent-blue);">6.5 TB</div>
+          <div class="pt-stat-change up">↑ 42.1 GB (今日)</div>
+        </div>
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">下载量</div>
+          <div class="pt-stat-value" style="color: var(--accent-orange);">1.8 TB</div>
+          <div class="pt-stat-change down">↑ 8.3 GB (今日)</div>
+        </div>
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">做种积分</div>
+          <div class="pt-stat-value" style="color: var(--accent-green);">856,200</div>
+          <div class="pt-stat-change up">↑ 4,800 (今日)</div>
+        </div>
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">魔力值</div>
+          <div class="pt-stat-value" style="color: var(--accent-purple);">520,800</div>
+          <div class="pt-stat-change up">↑ 2,900 (今日)</div>
+        </div>
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">分享率</div>
+          <div class="pt-stat-value" style="color: var(--accent-cyan);">3.61</div>
+          <div class="pt-stat-change down">↓ 0.01</div>
+        </div>
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">做种数</div>
+          <div class="pt-stat-value" style="color: var(--text-primary);">89</div>
+          <div class="pt-stat-change">--</div>
+        </div>
+      </div>
+      <div class="pt-site-actions">
+        <button class="btn-sm btn-visit" onclick="visitSite('hdsky')">🔗 跳转站点</button>
+        <button class="btn-sm btn-refresh-site" onclick="refreshSite('hdsky')">🔄 刷新数据</button>
+        <button class="btn-sm btn-edit" onclick="editPtSite('hdsky')">⚙️ 编辑</button>
+      </div>
+    </div>
+
+    <!-- Site 3: TTG (Offline) -->
+    <div class="pt-site-card">
+      <div class="pt-site-card-header">
+        <div class="pt-site-info">
+          <div class="pt-site-avatar" style="background:#e65100;color:#ffcc80;">T</div>
+          <div>
+            <div class="pt-site-name">TTG</div>
+            <div class="pt-site-url">totheglory.im</div>
+            <div style="margin-top:4px">
+              <span class="pt-schedule-tag">⏰ 每天 2 次</span>
+            </div>
+          </div>
+        </div>
+        <div class="pt-site-status">
+          <div class="pt-status-badge offline">
+            <span class="pt-status-dot"></span> 异常
+          </div>
+          <div class="pt-last-visit">最后成功: 2天前</div>
+        </div>
+      </div>
+      <div class="pt-site-stats">
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">上传量</div>
+          <div class="pt-stat-value" style="color: var(--accent-blue);">4.2 TB</div>
+          <div class="pt-stat-change">-- (2天未更新)</div>
+        </div>
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">下载量</div>
+          <div class="pt-stat-value" style="color: var(--accent-orange);">980 GB</div>
+          <div class="pt-stat-change">-- (2天未更新)</div>
+        </div>
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">做种积分</div>
+          <div class="pt-stat-value" style="color: var(--accent-green);">420,000</div>
+          <div class="pt-stat-change">-- (2天未更新)</div>
+        </div>
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">魔力值</div>
+          <div class="pt-stat-value" style="color: var(--accent-purple);">310,000</div>
+          <div class="pt-stat-change">-- (2天未更新)</div>
+        </div>
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">分享率</div>
+          <div class="pt-stat-value" style="color: var(--accent-cyan);">4.29</div>
+          <div class="pt-stat-change">--</div>
+        </div>
+        <div class="pt-stat-item">
+          <div class="pt-stat-label">做种数</div>
+          <div class="pt-stat-value" style="color: var(--text-primary);">62</div>
+          <div class="pt-stat-change">--</div>
+        </div>
+      </div>
+      <div class="pt-site-actions">
+        <button class="btn-sm btn-visit" onclick="visitSite('ttg')">🔗 跳转站点</button>
+        <button class="btn-sm btn-refresh-site" onclick="refreshSite('ttg')">🔄 重试访问</button>
+        <button class="btn-sm btn-edit" onclick="editPtSite('ttg')">⚙️ 编辑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Visit Log -->
+  <div class="pt-log-section">
+    <div class="pt-log-header">
+      <span class="pt-log-title">📋 最近访问记录</span>
+      <span style="font-size:11px;color:var(--text-secondary);">仅显示最近 50 条</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="pt-log-table">
+        <thead>
+          <tr>
+            <th>时间</th>
+            <th>站点</th>
+            <th>类型</th>
+            <th>结果</th>
+            <th>详情</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2026-06-15 14:00</td>
+            <td>M-Team</td>
+            <td>定时访问</td>
+            <td><span class="pt-log-success">✓ 成功</span></td>
+            <td style="color:var(--text-secondary)">上传+86GB, 积分+8200</td>
+          </tr>
+          <tr>
+            <td>2026-06-15 14:00</td>
+            <td>HDSky</td>
+            <td>定时访问</td>
+            <td><span class="pt-log-success">✓ 成功</span></td>
+            <td style="color:var(--text-secondary)">上传+42GB, 积分+4800</td>
+          </tr>
+          <tr>
+            <td>2026-06-15 08:00</td>
+            <td>TTG</td>
+            <td>定时访问</td>
+            <td><span class="pt-log-fail">✗ 失败</span></td>
+            <td style="color:var(--accent-red)">连接超时 (30s)</td>
+          </tr>
+          <tr>
+            <td>2026-06-15 08:00</td>
+            <td>M-Team</td>
+            <td>定时访问</td>
+            <td><span class="pt-log-success">✓ 成功</span></td>
+            <td style="color:var(--text-secondary)">上传+52GB, 积分+5200</td>
+          </tr>
+          <tr>
+            <td>2026-06-15 08:00</td>
+            <td>HDSky</td>
+            <td>定时访问</td>
+            <td><span class="pt-log-success">✓ 成功</span></td>
+            <td style="color:var(--text-secondary)">上传+28GB, 积分+3100</td>
+          </tr>
+          <tr>
+            <td>2026-06-14 22:15</td>
+            <td>M-Team</td>
+            <td>手动跳转</td>
+            <td><span class="pt-log-success">✓ 已跳转</span></td>
+            <td style="color:var(--text-secondary)">用户主动访问</td>
+          </tr>
+          <tr>
+            <td>2026-06-14 20:00</td>
+            <td>TTG</td>
+            <td>定时访问</td>
+            <td><span class="pt-log-fail">✗ 失败</span></td>
+            <td style="color:var(--accent-red)">HTTP 502</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <!-- Speed Limit Modal -->
 <div class="modal-overlay" id="speedModal">
   <div class="modal">
@@ -1368,6 +1956,34 @@ function switchClientTab(client) {
     document.querySelectorAll('.torrent-sub-tab')[1].classList.add('active');
     document.getElementById('panel-tr').classList.add('active');
   }
+}
+
+// ===== PT Sites Management =====
+
+function visitSite(siteId) {
+  // In production: POST /api/pt/visit-log with {site_id, type:'manual'}
+  const site = document.querySelector(`[data-site="${siteId}"]`);
+  if (site) {
+    const url = site.dataset.url;
+    window.open(url, '_blank');
+  }
+  alert('正在跳转到站点... (生产环境会记录访问日志并更新最后访问时间)');
+}
+
+function refreshSite(siteId) {
+  alert(`正在刷新 ${siteId} 的数据... (生产环境会调用 Playwright 模拟访问)`)
+}
+
+function triggerAllVisit() {
+  alert('正在对所有站点执行全局刷新... (生产环境会并发执行)')
+}
+
+function showPtSiteForm(siteData) {
+  alert(siteData ? `编辑站点: ${siteData.name}` : '添加新站点\n\n(生产环境会弹出表单Modal，包含：站点名称、URL、Cookie、访问频率等字段)')
+}
+
+function editPtSite(siteId) {
+  showPtSiteForm({ id: siteId, name: siteId });
 }
 </script>
 

@@ -25,9 +25,14 @@ async def qb_list():
         active = sum(1 for t in torrents if t["state"] == "downloading")
         seeding = sum(1 for t in torrents if t["state"] == "seeding")
         paused = sum(1 for t in torrents if t["state"] == "paused")
+        source_info = scheduler.get_client_source("qb")
         return {
             "client": "qbittorrent",
-            "stats": {**transfer, "active": active, "seeding": seeding, "paused": paused, "speed_limit": speed_limit},
+            "stats": {
+                **transfer,
+                "active": active, "seeding": seeding, "paused": paused,
+                "speed_limit": {**speed_limit, "source": source_info},
+            },
             "torrents": torrents,
         }
     except Exception as e:
@@ -84,6 +89,7 @@ async def tr_list():
         active = sum(1 for t in torrents if t["state"] == "downloading")
         seeding = sum(1 for t in torrents if t["state"] == "seeding")
         paused = sum(1 for t in torrents if t["state"] == "paused")
+        source_info = scheduler.get_client_source("tr")
         return {
             "client": "transmission",
             "stats": {
@@ -92,7 +98,7 @@ async def tr_list():
                 "active": active,
                 "seeding": seeding,
                 "paused": paused,
-                "speed_limit": speed_limit,
+                "speed_limit": {**speed_limit, "source": source_info},
             },
             "torrents": torrents,
         }

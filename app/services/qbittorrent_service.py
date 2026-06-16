@@ -59,8 +59,9 @@ class QBittorrentService:
     async def get_speed_limit(self) -> dict:
         dl_resp = await self._request("GET", "/api/v2/transfer/downloadLimit")
         ul_resp = await self._request("GET", "/api/v2/transfer/uploadLimit")
-        dl = int(dl_resp.text.strip()) if dl_resp.status_code == 200 else 0
-        ul = int(ul_resp.text.strip()) if ul_resp.status_code == 200 else 0
+        # qB API 返回 bytes/sec，统一转为 KB/s
+        dl = int(dl_resp.text.strip()) // 1024 if dl_resp.status_code == 200 else 0
+        ul = int(ul_resp.text.strip()) // 1024 if ul_resp.status_code == 200 else 0
         return {
             "enabled": dl > 0 or ul > 0,
             "download": dl,

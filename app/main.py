@@ -7,9 +7,10 @@ from fastapi.responses import FileResponse
 from pathlib import Path
 
 from app.config import config
-from app.routers import system, torrent, movie, news
+from app.routers import system, torrent, movie, news, pt_site
 from app.services.news_service import news_service
 from app.services.speed_scheduler import speed_limit_loop
+from app.services.pt_scheduler import scheduler as pt_scheduler
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -27,9 +28,12 @@ async def news_refresh_loop():
 async def lifespan(app: FastAPI):
     news_task = asyncio.create_task(news_refresh_loop())
     speed_task = asyncio.create_task(speed_limit_loop())
+    pt_schedule_task = asyncio.create_task(pt_scheduler.start_loop())
     yield
     news_task.cancel()
     speed_task.cancel()
+    pt_scheduler.stop()
+    pt_schedule_task.cancel()
 
 
 app = FastAPI(title="NAS Monitor", version="1.0.0", lifespan=lifespan)
@@ -38,6 +42,7 @@ app.include_router(system.router, prefix="/api/system", tags=["system"])
 app.include_router(torrent.router, prefix="/api/torrent", tags=["torrent"])
 app.include_router(movie.router, prefix="/api/movies", tags=["movies"])
 app.include_router(news.router, prefix="/api/news", tags=["news"])
+app.include_router(pt_site.router, prefix="/api/pt", tags=["pt"])
 
 static_dir = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=static_dir), name="static")

@@ -189,6 +189,70 @@ body {
 ::-webkit-scrollbar{width:6px;height:6px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:3px;}
+/* PT Tab */
+.pt-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+.pt-site-grid{display:grid;grid-template-columns:repeat(1,1fr);gap:12px;margin-bottom:16px;}
+@media(min-width:768px){.pt-site-grid{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:1200px){.pt-site-grid{grid-template-columns:repeat(3,1fr);}}
+.pt-site-card{background:var(--bg-card);border-radius:12px;padding:16px;border:1px solid var(--border-color);transition:all 0.2s;}
+.pt-site-card:hover{border-color:var(--accent-blue);transform:translateY(-2px);}
+.pt-site-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.pt-site-info{display:flex;align-items:center;gap:10px;}
+.pt-site-avatar{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0;}
+.pt-site-name{font-size:15px;font-weight:600;}
+.pt-site-url{font-size:11px;color:var(--text-secondary);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pt-status-badge{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:500;}
+.pt-status-badge.online{background:#1b5e20;color:#81c784;}
+.pt-status-badge.offline{background:#b71c1c;color:#ef9a9a;}
+.pt-status-badge.unknown{background:#4a4a4a;color:#bbb;}
+.pt-status-dot{width:6px;height:6px;border-radius:50%;}
+.pt-status-badge.online .pt-status-dot{background:#81c784;}
+.pt-status-badge.offline .pt-status-dot{background:#ef9a9a;}
+.pt-last-visit{font-size:10px;color:var(--text-secondary);line-height:1.4;}
+.pt-site-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:12px;}
+.pt-stat-item{background:var(--bg-secondary);border-radius:8px;padding:8px 10px;}
+.pt-stat-label{font-size:10px;color:var(--text-secondary);margin-bottom:2px;text-transform:uppercase;letter-spacing:.3px;}
+.pt-stat-value{font-size:22px;font-weight:700;}
+.pt-stat-change{font-size:10px;}
+.pt-stat-change.up{color:var(--accent-green);}
+.pt-stat-change.down{color:var(--accent-red);}
+.pt-site-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-sm{padding:6px 12px;border-radius:6px;border:none;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:4px;flex:1;justify-content:center;}
+.btn-visit{background:var(--accent-blue);color:white;}
+.btn-visit:hover{background:#1976d2;}
+.btn-refresh{background:var(--bg-card-hover);color:var(--text-primary);border:1px solid var(--border-color);}
+.btn-edit{background:var(--bg-card-hover);color:var(--text-secondary);border:1px solid var(--border-color);}
+.pt-log-section{background:var(--bg-card);border-radius:12px;padding:16px;border:1px solid var(--border-color);}
+.pt-log-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.pt-log-title{font-size:14px;font-weight:600;}
+.pt-log-table{width:100%;border-collapse:collapse;}
+.pt-log-table th{text-align:left;padding:8px;color:var(--text-secondary);font-weight:500;border-bottom:1px solid var(--border-color);white-space:nowrap;}
+.pt-log-table td{padding:8px;border-bottom:1px solid rgba(42,58,94,.4);white-space:nowrap;}
+.pt-log-success{color:#81c784;}
+.pt-log-fail{color:#ef9a9a;}
+.pt-schedule-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500;background:#1a237e;color:#9fa8da;}
+.pt-empty{text-align:center;padding:40px;color:var(--text-secondary);}
+.pt-empty-icon{font-size:48px;margin-bottom:12px;}
+textarea.form-input{resize:vertical;min-height:80px;font-family:monospace;font-size:12px;}
+@media(max-width:500px){.pt-site-stats{grid-template-columns:1fr;}}
+/* 移动端 PT 卡片紧凑化 */
+@media(max-width:600px){
+  .pt-site-card{padding:10px 12px;border-radius:10px;}
+  .pt-site-card-header{margin-bottom:8px;}
+  .pt-site-avatar{width:32px;height:32px;border-radius:8px;font-size:14px;}
+  .pt-site-name{font-size:13px;}
+  .pt-site-url{max-width:120px;font-size:10px;}
+  .pt-site-stats{grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:8px;}
+  .pt-stat-item{padding:6px 8px;border-radius:6px;}
+  .pt-stat-label{font-size:9px;margin-bottom:1px;}
+  .pt-stat-value{font-size:15px;}
+  .pt-stat-change{font-size:9px;}
+  .pt-site-actions{gap:4px;}
+  .btn-sm{padding:5px 8px;font-size:11px;border-radius:5px;}
+  .pt-status-badge{font-size:10px;padding:2px 6px;}
+  .pt-last-visit{font-size:9px;}
+  .pt-schedule-tag{font-size:9px;padding:1px 6px;}
+}
 </style>
 </head>
 <body>
@@ -204,6 +268,7 @@ body {
   <div class="tab-item" onclick="switchTab(1)">种子任务</div>
   <div class="tab-item" onclick="switchTab(2)">影视推荐</div>
   <div class="tab-item" onclick="switchTab(3)">新闻资讯</div>
+  <div class="tab-item" onclick="switchTab(4)">PT 管理</div>
 </nav>
 
 <!-- Tab1: System -->
@@ -254,6 +319,9 @@ body {
 
 <!-- Tab4: News -->
 <div class="tab-content" id="tab-news"></div>
+
+<!-- Tab5: PT Sites -->
+<div class="tab-content" id="tab-pt"></div>
 
 <!-- Speed Limit Modal -->
 <div class="modal-overlay" id="speedModal">
@@ -316,6 +384,7 @@ function switchTab(index) {
   if (index === 1 && !torrentLoaded) loadTorrents();
   if (index === 2 && !movieLoaded) loadMovies();
   if (index === 3 && !newsLoaded) loadNews();
+  if (index === 4 && !ptLoaded) loadPtSites();
 }
 
 // === Tab1: System Monitor ===
@@ -393,7 +462,7 @@ function renderDisks(disks) {
   el.innerHTML = disks.map(d => {
     const color = d.percent > 85 ? 'var(--accent-red)' : d.percent > 70 ? 'var(--accent-orange)' : 'var(--accent-green)';
     return `<div class="disk-item">
-      <div class="disk-item-header"><span>${d.device} · ${d.mountpoint}</span><span>${d.used_gb} GB / ${d.total_gb} GB</span></div>
+      <div class="disk-item-header"><span>${d.mountpoint}</span><span>${d.used_gb} GB / ${d.total_gb} GB</span></div>
       <div class="disk-bar"><div class="disk-bar-fill" style="width:${d.percent}%;background:${color}"></div></div>
     </div>`;
   }).join('');
@@ -439,8 +508,18 @@ async function fetchClient(client) {
 function renderClientPanel(client, data) {
   const s = data.stats;
   const sl = s.speed_limit || {};
-  const limitText = sl.enabled ? `限速: ↓${Math.round(sl.download/1024)}KB/s ↑${Math.round(sl.upload/1024)}KB/s` : '限速: 未开启';
-  const limitColor = sl.enabled ? 'var(--accent-red)' : 'var(--accent-orange)';
+  let limitText, limitColor;
+  if (!sl.enabled) {
+    const srcLabel = (sl.source && sl.source.label) || '不限速';
+    limitText = `限速: 未开启 (${srcLabel})`;
+    limitColor = 'var(--accent-orange)';
+  } else {
+    const dlKB = sl.download;
+    const ulKB = sl.upload;
+    const srcLabel = (sl.source && sl.source.label) || '';
+    limitText = `限速: ↓${dlKB}KB/s ↑${ulKB}KB/s · ${srcLabel}`;
+    limitColor = sl.source && sl.source.source === 'manual' ? 'var(--accent-red)' : 'var(--accent-blue)';
+  }
   const activeCount = data.torrents.filter(t => t.download_speed > 0 || t.upload_speed > 0).length;
 
   let html = `
@@ -470,7 +549,24 @@ function renderClientPanel(client, data) {
   html += data.torrents.map(t => renderTorrentCard(t)).join('');
   html += '</div>';
   document.getElementById(`panel-${client}`).innerHTML = html;
-  filterActivity(client, 'active');
+  // 恢复用户之前选择的过滤状态，而非每次强制切回"活跃"
+  const saved = window._torrentFilter || {};
+  const mode = saved[client] || 'active';
+  const tabEl = document.querySelector(`#panel-${client} .news-tab[onclick*="${mode}"]`);
+  if (tabEl) {
+    filterActivity(client, mode, tabEl);
+  } else {
+    filterActivity(client, 'active');
+  }
+  // 恢复搜索框文字
+  const searchQuery = saved[client + '_search'] || '';
+  if (searchQuery) {
+    const searchInput = document.querySelector(`#panel-${client} .torrent-search`);
+    if (searchInput) {
+      searchInput.value = searchQuery;
+      filterTorrents(client, searchQuery);
+    }
+  }
 }
 
 function renderTorrentCard(t) {
@@ -497,11 +593,14 @@ function renderTorrentCard(t) {
       ${etaStr}
     </div>
     <div class="torrent-progress"><div class="torrent-progress-fill" style="width:${pct}%;background:${progressBg}"></div></div>
-    <div class="torrent-tags">${stateTag}${t.category ? `<span class="tag" style="background:#1a237e;color:#90caf9">${t.category}</span>` : ''}</div>
+    <div class="torrent-tags">${stateTag}${t.category ? `<span class="tag" style="background:#1a237e;color:#90caf9">${t.category}</span>` : ''}${(t.tags && t.tags.trim()) ? t.tags.split(',').map(tag => `<span class="tag" style="background:#263238;color:#b0bec5">${tag.trim()}</span>`).join('') : ''}</div>
   </div>`;
 }
 
 function filterTorrents(client, query) {
+  // 记住搜索词
+  if (!window._torrentFilter) window._torrentFilter = {};
+  window._torrentFilter[client + '_search'] = query;
   const q = query.toLowerCase();
   document.querySelectorAll(`#list-${client} .torrent-card`).forEach(card => {
     card.style.display = card.dataset.name.includes(q) ? '' : 'none';
@@ -509,6 +608,9 @@ function filterTorrents(client, query) {
 }
 
 function filterActivity(client, mode, el) {
+  // 记住用户选择，下次刷新时恢复
+  if (!window._torrentFilter) window._torrentFilter = {};
+  window._torrentFilter[client] = mode;
   if (el) {
     el.parentElement.querySelectorAll('.news-tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
@@ -577,7 +679,7 @@ function renderDoubanSection(title, items) {
   return `<div class="movie-section"><div class="section-header"><span class="section-title">${title}</span></div>
     <div class="movie-scroll">${items.map(m => `
       <div class="movie-card" onclick="window.open('${m.url}','_blank')" style="cursor:pointer">
-        <div class="movie-poster">${m.cover_url ? `<img src="${m.cover_url}" loading="lazy" alt="${m.title}">` : '🎬'}<div class="movie-rating">⭐ ${m.rating || '-'}</div></div>
+        <div class="movie-poster">${m.cover_url ? `<img src="/api/movies/img-proxy?url=${encodeURIComponent(m.cover_url)}" loading="lazy" alt="${m.title}">` : '🎬'}<div class="movie-rating">⭐ ${m.rating || '-'}</div></div>
         <div class="movie-title" title="${m.title}">${m.title}</div>
         <div class="movie-year">${m.card_subtitle || m.year || ''}</div>
       </div>`).join('')}
@@ -673,8 +775,446 @@ function timeAgo(ts) {
   return Math.floor(diff/86400) + '天前';
 }
 
+function formatLogTime(dateStr) {
+  // dateStr 格式: "2026-06-15 01:23" 或 ISO 格式
+  const d = new Date(dateStr.replace(' ','T') + (dateStr.includes('+')?'':'+08:00'));
+  if (isNaN(d.getTime())) return dateStr.substring(0,16).replace('T',' ');
+  const weekDays = ['周日','周一','周二','周三','周四','周五','周六'];
+  const day = weekDays[d.getDay()];
+  const month = d.getMonth() + 1;
+  const date = d.getDate();
+  const hours = String(d.getHours()).padStart(2,'0');
+  const mins = String(d.getMinutes()).padStart(2,'0');
+  return `${month}/${date} ${day} ${hours}:${mins}`;
+}
+
 // === Auto Refresh ===
 setInterval(() => { if (torrentLoaded && document.querySelectorAll('.tab-item')[1].classList.contains('active')) { fetchClient(currentClient); } }, 5000);
+
+// === Tab5: PT Sites ===
+let ptLoaded = false;
+
+async function loadPtSites() {
+  ptLoaded = true;
+  const container = document.getElementById('tab-pt');
+  container.innerHTML = `<div class="loading">加载中...</div>`;
+  try {
+    const [sitesResp, scheduleResp] = await Promise.all([
+      fetch('/api/pt/sites').then(r => r.json()),
+      fetch('/api/pt/schedule').then(r => r.json()),
+    ]);
+    window._ptSites = sitesResp.sites || [];
+    window._ptSchedules = scheduleResp.schedules || [];
+    renderPtTab();
+  } catch(e) {
+    container.innerHTML = `<div class="loading" style="color:var(--accent-red)">加载失败: ${e.message}</div>`;
+  }
+}
+
+function renderPtTab() {
+  const container = document.getElementById('tab-pt');
+  const sites = window._ptSites || [];
+  const schedules = window._ptSchedules || [];
+
+  let logTabs = window._ptLogTab || 'playwright';
+  const current = logTabs;
+  const scheduleInfo = (() => {
+    const nextRuns = schedules.filter(s => s.next_run !== '明天');
+    if (nextRuns.length > 0) {
+      const times = [...new Set(nextRuns.map(s => {
+        const t = s.next_run.split(' ')[1];
+        return t ? t.substring(0, 5) : '';
+      }).filter(Boolean))].sort();
+      return `下次扫描: <span style="color:var(--accent-cyan)">${times.join(' · ') || '--'}</span>`;
+    }
+    return '下次扫描: <span style="color:var(--text-secondary)">明天</span>';
+  })();
+
+  let html = `
+    <div class="pt-toolbar">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="showPtSiteForm()">＋ 添加站点</button>
+        <button class="btn btn-success" onclick="triggerPtScan()">🔄 全局刷新</button>
+      </div>
+      <span style="font-size:12px;color:var(--text-secondary);">${scheduleInfo}</span>
+    </div>`;
+
+  // 站点卡片 grid
+  if (sites.length) {
+    html += `<div class="pt-site-grid">`;
+    sites.forEach(site => {
+      const sched = schedules.find(s => s.site_id === site.id);
+      html += renderPtSiteCard(site, sched);
+    });
+    html += `</div>`;
+  } else {
+    html += `<div class="pt-empty">
+      <div class="pt-empty-icon">📡</div>
+      <div class="pt-empty-text">暂无 PT 站点配置</div>
+      <button class="btn btn-primary" onclick="showPtSiteForm()">＋ 添加第一个 PT 站点</button>
+    </div>`;
+  }
+
+  // 访问日志 — 分两个 tab: Playwright 访问 / 链接跳转
+  html += `<div class="pt-log-section">
+    <div class="pt-log-header">
+      <span class="pt-log-title">📋 操作记录</span>
+      <div class="news-tabs" style="margin-bottom:0" id="ptLogTabs">
+        <div class="news-tab${current==='playwright'?' active':''}" onclick="switchPtLogTab('playwright')">🖥️ Playwright 访问</div>
+        <div class="news-tab${current==='redirect'?' active':''}" onclick="switchPtLogTab('redirect')">🔗 链接跳转</div>
+      </div>
+    </div>
+    <div style="overflow-x:auto;min-height:60px" id="ptLogContent">
+      <table class="pt-log-table">
+        <thead><tr><th>时间</th><th>站点</th><th>结果</th><th>详情</th></tr></thead>
+        <tbody id="ptLogBody"><tr><td colspan="4" style="text-align:center;color:var(--text-secondary)">加载中...</td></tr></tbody>
+      </table>
+    </div>
+  </div>`;
+
+  container.innerHTML = html;
+
+  // 异步加载日志
+  loadPtLogs(current);
+}
+
+async function switchPtLogTab(type) {
+  window._ptLogTab = type;
+  // 更新 tab 样式
+  document.querySelectorAll('#ptLogTabs .news-tab').forEach(t => t.classList.toggle('active', false));
+  const tabs = document.querySelectorAll('#ptLogTabs .news-tab');
+  if (type === 'playwright') tabs[0]?.classList.add('active');
+  else tabs[1]?.classList.add('active');
+  loadPtLogs(type);
+}
+
+async function loadPtLogs(type) {
+  const tbody = document.getElementById('ptLogBody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary)">加载中...</td></tr>';
+  try {
+    const resp = await fetch(`/api/pt/logs?limit=50`);
+    const data = await resp.json();
+    let logs = data.logs || [];
+    if (type === 'playwright') {
+      // Playwright 访问 = 定时(scheduled) + 手动刷新(manual)
+      logs = logs.filter(l => l.visit_type === 'scheduled' || l.visit_type === 'manual');
+    } else {
+      // 链接跳转
+      logs = logs.filter(l => l.visit_type === 'redirect');
+    }
+    const sites = window._ptSites || [];
+    if (logs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:20px;">暂无记录</td></tr>';
+      return;
+    }
+    tbody.innerHTML = logs.map(log => {
+      const siteName = sites.find(s => s.id === log.site_id)?.name || log.site_id;
+      const resultHtml = log.success ? '<span class="pt-log-success">✓ 成功</span>' : '<span class="pt-log-fail">✗ 失败</span>';
+      const dateStr = log.created_at ? formatLogTime(log.created_at) : '';
+      return `<tr>
+        <td>${dateStr}</td>
+        <td>${siteName}</td>
+        <td>${resultHtml}</td>
+        <td style="color:var(--text-secondary);max-width:200px;overflow:hidden;text-overflow:ellipsis;">${log.details || log.message || ''}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--accent-red)">加载失败</td></tr>';
+  }
+}
+
+function renderPtSiteCard(site, sched) {
+  const snap = site.latest_snapshot;
+  const delta = site.today_delta || {};
+  const hasData = !!snap;
+
+  // 状态
+  let statusClass = 'unknown', statusText = '未访问';
+  if (site.last_success_time) {
+    // 检查最后一次成功是否在48小时内
+    const lastTs = new Date(site.last_success_time).getTime();
+    const hoursSince = (Date.now() - lastTs) / 3600000;
+    if (hoursSince < 48) { statusClass = 'online'; statusText = '正常'; }
+    else { statusClass = 'offline'; statusText = '超时未更新'; }
+  }
+
+  // 链接跳转天数
+  let redirectDaysAgo = '';
+  if (site.last_redirect_time) {
+    const lastTs = new Date(site.last_redirect_time.replace(' ','T') + '+08:00').getTime();
+    const daysSince = Math.floor((Date.now() - lastTs) / 86400000);
+    if (daysSince === 0) redirectDaysAgo = '今天';
+    else if (daysSince === 1) redirectDaysAgo = '昨天';
+    else redirectDaysAgo = `${daysSince}天前`;
+  } else {
+    redirectDaysAgo = '从未';
+  }
+
+  // Playwright 最近访问
+  let playwrightAgo = '';
+  if (site.last_success_time) {
+    const lastTs = new Date(site.last_success_time.replace(' ','T') + '+08:00').getTime();
+    const hoursSince = (Date.now() - lastTs) / 3600000;
+    if (hoursSince < 1) playwrightAgo = '刚刚';
+    else if (hoursSince < 24) playwrightAgo = `${Math.floor(hoursSince)}小时前`;
+    else playwrightAgo = `${Math.floor(hoursSince/24)}天前`;
+  } else {
+    playwrightAgo = '从未';
+  }
+
+  // 头像字母
+  const avatarLetter = site.name.charAt(0).toUpperCase();
+  const avatarColors = ['#1565c0','#6a1b9a','#e65100','#2e7d32','#c62828','#006064','#4a148c','#b71c1c'];
+  const avatarBg = avatarColors[site.name.charCodeAt(0) % avatarColors.length];
+  const avatarFg = '#e0e0e0';
+
+  // 今天实际访问时间
+  const todayTimes = (sched && sched.visit_times) ? sched.visit_times.join(' · ') : `${site.visit_freq}次/天`;
+
+  function fmtDelta(key) {
+    if (!hasData || !delta || !delta[key] || delta[key] === 0) return '';
+    const val = delta[key];
+    const sign = val > 0 ? '+' : '';
+    if (key.includes('bytes')) {
+      return `<div class="pt-stat-change ${val > 0 ? 'up' : 'down'}">${sign}${formatSize(Math.abs(val))} (今日)</div>`;
+    }
+    return `<div class="pt-stat-change ${val > 0 ? 'up' : 'down'}">${sign}${Math.round(val).toLocaleString()} (今日)</div>`;
+  }
+
+  function fmtBytesPt(b) {
+    if (!b || b === 0) return '0 B';
+    return formatSize(b);
+  }
+
+  return `<div class="pt-site-card">
+    <div class="pt-site-card-header">
+      <div class="pt-site-info">
+        <div class="pt-site-avatar" style="background:${avatarBg};color:${avatarFg};">${avatarLetter}</div>
+        <div>
+          <div class="pt-site-name">${site.name}</div>
+          <div class="pt-site-url">${site.url.replace(/https?:\/\//,'')}</div>
+          <div style="margin-top:4px"><span class="pt-schedule-tag">⏰ ${todayTimes}</span></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        <div class="pt-status-badge ${statusClass}"><span class="pt-status-dot"></span> ${statusText}</div>
+        <div class="pt-last-visit">Playwright: ${playwrightAgo}</div>
+        <div class="pt-last-visit" style="color:${redirectDaysAgo.includes('天') && parseInt(redirectDaysAgo) > 7 ? 'var(--accent-red)' : 'var(--text-secondary)'}">链接跳转: ${redirectDaysAgo}</div>
+      </div>
+    </div>
+    <div class="pt-site-stats">
+      <div class="pt-stat-item">
+        <div class="pt-stat-label">上传量</div>
+        <div class="pt-stat-value" style="color:var(--accent-blue);">${hasData ? fmtBytesPt(snap.upload_bytes) : '--'}</div>
+        ${fmtDelta('upload_bytes')}
+      </div>
+      <div class="pt-stat-item">
+        <div class="pt-stat-label">下载量</div>
+        <div class="pt-stat-value" style="color:var(--accent-orange);">${hasData ? fmtBytesPt(snap.download_bytes) : '--'}</div>
+        ${fmtDelta('download_bytes')}
+      </div>
+      <div class="pt-stat-item">
+        <div class="pt-stat-label">做种积分</div>
+        <div class="pt-stat-value" style="color:var(--accent-green);">${hasData ? (snap.seed_points||0).toLocaleString() : '--'}</div>
+        ${fmtDelta('seed_points')}
+      </div>
+      <div class="pt-stat-item">
+        <div class="pt-stat-label">魔力值</div>
+        <div class="pt-stat-value" style="color:var(--accent-purple);">${hasData ? (snap.bonus_points||0).toLocaleString() : '--'}</div>
+        ${fmtDelta('bonus_points')}
+      </div>
+      <div class="pt-stat-item">
+        <div class="pt-stat-label">分享率</div>
+        <div class="pt-stat-value" style="color:var(--accent-cyan);">${hasData ? (snap.share_ratio||0).toFixed(2) : '--'}</div>
+      </div>
+      <div class="pt-stat-item">
+        <div class="pt-stat-label">做种数</div>
+        <div class="pt-stat-value" style="color:var(--text-primary);">${hasData ? (snap.seeding_count||0) : '--'}</div>
+      </div>
+    </div>
+    <div class="pt-site-actions">
+      <button class="btn-sm btn-visit" onclick="visitPtSite('${site.id}')">🔗 跳转站点</button>
+      <button class="btn-sm btn-refresh" onclick="refreshPtSite('${site.id}')">🔄 刷新数据</button>
+      <button class="btn-sm btn-edit" onclick="showPtSiteForm('${site.id}')">⚙️ 编辑</button>
+    </div>
+  </div>`;
+}
+
+async function visitPtSite(siteId) {
+  try {
+    const resp = await fetch(`/api/pt/visit-log/${siteId}`, { method:'POST' });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    if (data.url) {
+      window.open(data.url, '_blank');
+    }
+    // 刷新数据
+    setTimeout(() => loadPtSites(), 500);
+  } catch(e) {
+    alert(`跳转失败: ${e.message}`);
+  }
+}
+
+async function refreshPtSite(siteId) {
+  const btn = document.querySelector(`[onclick="refreshPtSite('${siteId}')"]`);
+  if (btn) { btn.textContent = '⏳ 扫描中...'; btn.disabled = true; }
+  try {
+    const resp = await fetch(`/api/pt/scan?site_id=${siteId}`, { method:'POST' });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    if (data.success) {
+      // 3秒后刷新页面数据
+      setTimeout(() => loadPtSites(), 3000);
+    }
+  } catch(e) {
+    alert(`操作失败: ${e.message}`);
+    if (btn) { btn.textContent = '🔄 刷新数据'; btn.disabled = false; }
+  }
+}
+
+async function triggerPtScan() {
+  const btn = document.querySelector('[onclick="triggerPtScan()"]');
+  if (btn) { btn.textContent = '⏳ 扫描中...'; btn.disabled = true; }
+  try {
+    const resp = await fetch('/api/pt/scan', { method:'POST' });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    if (data.success) {
+      setTimeout(() => loadPtSites(), 5000);
+    }
+  } catch(e) {
+    alert(`操作失败: ${e.message}`);
+    if (btn) { btn.textContent = '🔄 全局刷新'; btn.disabled = false; }
+  }
+}
+
+function showPtSiteForm(siteId) {
+  let site = null;
+  if (siteId) {
+    // 获取已有站点数据
+    fetch(`/api/pt/sites/${siteId}`).then(r => r.json()).then(data => {
+      renderPtFormModal(data.site);
+    }).catch(() => {
+      alert('获取站点信息失败');
+    });
+  } else {
+    renderPtFormModal(null);
+  }
+}
+
+function renderPtFormModal(site) {
+  const isEdit = !!site;
+  const title = isEdit ? `编辑站点: ${site.name}` : '添加 PT 站点';
+  const values = site || { id:'', name:'', url:'', cookie:'', user_agent:'', visit_freq:2, visit_times:'', notes:'' };
+
+  const saveFn = isEdit ? `savePtSite(true)` : `savePtSite(false)`;
+  const deleteBtn = isEdit ? `<button class="btn btn-danger" style="margin-right:auto;" onclick="deletePtSite('${values.id}')">🗑️ 删除</button>` : '';
+
+  // 创建一个简单的 modal
+  const modalHtml = `
+    <div class="modal-overlay show" id="ptFormModal">
+      <div class="modal" style="max-width:500px;">
+        <div class="modal-title">${title}</div>
+        <div class="form-group">
+          <label class="form-label">站点 ID (英文标识)</label>
+          <input type="text" class="form-input" id="pt-f-id" value="${values.id}" ${isEdit?'readonly style="opacity:0.6"':''} placeholder="例如: mteam">
+        </div>
+        <div class="form-group">
+          <label class="form-label">站点名称</label>
+          <input type="text" class="form-input" id="pt-f-name" value="${values.name}" placeholder="例如: M-Team">
+        </div>
+        <div class="form-group">
+          <label class="form-label">站点首页 URL</label>
+          <input type="text" class="form-input" id="pt-f-url" value="${values.url}" placeholder="例如: https://kp.m-team.cc/">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cookie</label>
+          <textarea class="form-input" id="pt-f-cookie" placeholder="粘贴完整的 Cookie 字符串">${values.cookie||''}</textarea>
+        </div>
+        <div class="form-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div>
+            <label class="form-label">每天访问频率 (1-4次)</label>
+            <select class="form-input" id="pt-f-freq">
+              <option value="1" ${values.visit_freq==1?'selected':''}>1 次/天 (09:00)</option>
+              <option value="2" ${values.visit_freq==2?'selected':''}>2 次/天 (09:00, 21:00)</option>
+              <option value="3" ${values.visit_freq==3?'selected':''}>3 次/天 (08:00, 14:00, 20:00)</option>
+              <option value="4" ${values.visit_freq==4?'selected':''}>4 次/天 (06, 12, 18, 23)</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">自定义时间 (可选)</label>
+            <input type="text" class="form-input" id="pt-f-times" value="${values.visit_times||''}" placeholder="例如: 08:00,14:00,20:00">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">备注</label>
+          <input type="text" class="form-input" id="pt-f-notes" value="${values.notes||''}" placeholder="备注信息">
+        </div>
+        <div class="modal-actions">
+          ${!isEdit ? `<button class="btn btn-danger" style="margin-right:auto;" onclick="deletePtSite('${values.id}')" ${!isEdit?'style="display:none"':''}>🗑️ 删除</button>` : `<button class="btn btn-danger" style="margin-right:auto;" onclick="deletePtSite('${values.id}')">🗑️ 删除</button>`}
+          <button class="btn" style="background:var(--border-color);color:var(--text-primary);" onclick="closePtForm()">取消</button>
+          <button class="btn btn-primary" onclick="${saveFn}">保存</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 插入 modal
+  const existing = document.getElementById('ptFormModal');
+  if (existing) existing.remove();
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function closePtForm() {
+  document.getElementById('ptFormModal')?.remove();
+}
+
+async function savePtSite(isEdit) {
+  const id = document.getElementById('pt-f-id').value.trim();
+  const name = document.getElementById('pt-f-name').value.trim();
+  const url = document.getElementById('pt-f-url').value.trim();
+
+  if (!id || !name || !url) { alert('请填写站点ID、名称和URL'); return; }
+
+  const data = {
+    id, name, url,
+    cookie: document.getElementById('pt-f-cookie').value.trim(),
+    visit_freq: parseInt(document.getElementById('pt-f-freq').value),
+    visit_times: document.getElementById('pt-f-times').value.trim(),
+    notes: document.getElementById('pt-f-notes').value.trim(),
+  };
+
+  try {
+    const method = isEdit ? 'PUT' : 'POST';
+    const endpoint = isEdit ? `/api/pt/sites/${id}` : '/api/pt/sites';
+    const resp = await fetch(endpoint, {
+      method,
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data),
+    });
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.detail || `HTTP ${resp.status}`);
+    }
+    closePtForm();
+    loadPtSites();
+  } catch(e) {
+    alert(`保存失败: ${e.message}`);
+  }
+}
+
+async function deletePtSite(siteId) {
+  if (!confirm(`确定删除站点 ${siteId} 吗？所有相关数据将被永久删除。`)) return;
+  try {
+    const resp = await fetch(`/api/pt/sites/${siteId}`, { method:'DELETE' });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    closePtForm();
+    loadPtSites();
+  } catch(e) {
+    alert(`删除失败: ${e.message}`);
+  }
+}
 
 // === Init ===
 initSystem();
