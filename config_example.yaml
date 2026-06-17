@@ -1,0 +1,128 @@
+# ============================================
+# NAS Monitor 配置模板
+# 使用方法：复制此文件为 config.yaml 并修改配置
+#   cp config_example.yaml config.yaml
+# ============================================
+
+server:
+  host: 0.0.0.0
+  port: 8900
+
+qbittorrent:
+  url: http://192.168.0.110:8080
+  username: your_username
+  password: your_password
+
+transmission:
+  url: http://192.168.0.110:9091
+  username: "your_username"
+  password: "your_password"
+
+speed_limit:
+  remove_cooldown: 180  # 解除限速后多少分钟内不参与调度（默认3小时）
+  schedule:
+    - name: "白天不限速"
+      start: "00:00"
+      end: "11:30"
+      download: 0  # KB/s
+      upload: 0    # KB/s
+    - name: "午间限速"
+      start: "11:30"
+      end: "13:30"
+      download: 512000  # KB/s
+      upload: 512    # KB/s
+    - name: "晚间限速"
+      start: "18:00"
+      end: "19:00"
+      download: 512000  # KB/s
+      upload: 512    # KB/s
+    - name: "夜间限速"
+      start: "22:00"
+      end: "00:00"
+      download: 1024     # 0=不限
+      upload: 1024
+
+tmdb:
+  api_key: "your_tmdb_api_key"  # 在 https://www.themoviedb.org/settings/api 申请
+  language: "zh-CN"
+  proxy: ""  # http://127.0.0.1:7890
+
+news:
+  refresh_interval: 1800
+  proxy: ""  # 国际源代理
+  sources:
+    tech:
+      - name: "36氪"
+        url: "https://36kr.com/feed"
+      - name: "虎嗅"
+        url: "https://rss.huxiu.com/"
+      - name: "IT之家"
+        url: "https://www.ithome.com/rss/"
+      - name: "少数派"
+        url: "https://sspai.com/feed"
+      - name: "Hacker News"
+        url: "https://hnrss.org/frontpage"
+    finance:
+      - name: "华尔街见闻"
+        url: "https://plink.anyfeeder.com/weixin/wallstreetcn"
+      - name: "华尔街日报"
+        url: "https://plink.anyfeeder.com/wsj/cn"
+    life:
+      - name: "知乎日报"
+        url: "https://plink.anyfeeder.com/zhihu/daily"
+      - name: "澎湃新闻"
+        url: "https://plink.anyfeeder.com/thepaper"
+    entertainment:
+      - name: "豆瓣电影"
+        url: "https://www.douban.com/feed/review/movie"
+    international:
+      - name: "BBC中文"
+        url: "https://plink.anyfeeder.com/bbc/cn"
+      - name: "路透中文"
+        url: "https://plink.anyfeeder.com/reuters/cn"
+      - name: "联合早报"
+        url: "https://plink.anyfeeder.com/zaobao/realtime/china"
+    dev:
+      - name: "阮一峰"
+        url: "https://www.ruanyifeng.com/blog/atom.xml"
+      - name: "掘金前端"
+        url: "https://rsshub.app/juejin/category/frontend"
+
+cache:
+  movie_ttl: 21600
+  news_ttl: 1800
+
+douban:
+  api_key: "0dad551ec0f84ed02907ff5c42e8ec70"
+  api_secret: "bf7dddc7c9cfe6f7"
+
+pt:
+  # 每个频率等级对应的时间点列表
+  # window: 随机窗口（分钟），实际执行时间在 [time - window, time + window] 内随机
+  # 同一天内随机值固定，每天不同，模拟真人访问习惯
+  visit_schedule:
+    1:
+      - time: "09:00"
+        window: 45
+    2:
+      - time: "09:00"
+        window: 45
+      - time: "21:00"
+        window: 45
+    3:
+      - time: "08:00"
+        window: 40
+      - time: "14:00"
+        window: 40
+      - time: "20:00"
+        window: 40
+    4:
+      - time: "06:00"
+        window: 30
+      - time: "12:00"
+        window: 30
+      - time: "18:00"
+        window: 30
+      - time: "23:00"
+        window: 30
+

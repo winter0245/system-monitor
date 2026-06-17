@@ -32,3 +32,6 @@ Thumbs.db
 
 # 环境
 .env
+
+# 配置文件（含敏感信息，使用 config_example.yaml 作为模板）
+config.yaml

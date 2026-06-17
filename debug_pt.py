@@ -8,7 +8,8 @@ import asyncio
 import re
 import sys
 
-DB_PATH = "E:/work/system-monitor/data/pt_sites.db"
+import os
+DB_PATH = os.environ.get("PT_DB_PATH", os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "pt_sites.db"))
 
 
 def load_site(site_id: str) -> dict:
@@ -99,8 +100,12 @@ async def debug_site(site_id: str):
                 (r"下载量\s*[：:]\s*([\d.,]+\s*(?:TB|GB|MB|KB|TiB|GiB|MiB|KiB|B))", "下载量"),
                 (r"分享率\s*[：:]\s*([\d.,]+)", "分享率"),
                 (r"做种积分\s*[：:]\s*([\d.,]+\s*K?)", "做种积分"),
+                (r"猫粮\s*(?:\[[^\]]*\])?\s*[：:]\s*([\d.,]+)", "猫粮(魔力)"),
+                (r"魔力值\s*(?:\[[^\]]*\])?\s*[：:]\s*([\d.,]+)", "魔力值"),
                 (r"积分\s*[：:]\s*([\d.,]+\s*K?)", "积分"),
                 (r"茉莉[：:]\s*([\d.,]+\s*K?)", "茉莉(魔力)"),
+                (r"Torrents?\s*seeding\s*(\d+)", "做种数(猫站)"),
+                (r"Torrents?\s*leeching\s*(\d+)", "下载数(猫站)"),
                 (r"做种活动\s*[：:]\s*(\d+)\s+\d+", "做种数(TTG)"),
                 (r"当前活动\s*[：:]\s*(\d+)\s+\d+", "做种数(SSD)"),
                 (r"做种活动\s*[：:]\s*\d+\s+(\d+)", "下载数(TTG)"),

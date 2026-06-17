@@ -128,8 +128,19 @@ class DoubanService:
     def _format(self, item: dict) -> dict:
         rating = item.get("rating", {})
         score = rating.get("value", 0) if rating else 0
+        # 电影用 cover，剧集用 pic，格式不同
         cover = item.get("cover", {})
-        cover_url = cover.get("url", "") if isinstance(cover, dict) else (cover or "")
+        pic = item.get("pic", {})
+        if isinstance(cover, dict) and cover.get("url"):
+            cover_url = cover["url"]
+        elif isinstance(pic, dict) and pic.get("normal"):
+            cover_url = pic["normal"]
+        elif isinstance(cover, str):
+            cover_url = cover
+        elif isinstance(pic, str):
+            cover_url = pic
+        else:
+            cover_url = ""
         return {
             "id": item.get("id", ""),
             "title": item.get("title", ""),

@@ -1,8 +1,5 @@
 """
 PT 站点 Playwright 监控 Service
-- 用 Playwright 无头浏览器模拟真实用户访问
-- 从页面解析上传量、下载量、做种积分、魔力值等
-- 支持模拟浏览行为（随机点击页面链接）
 """
 
 import asyncio
@@ -11,14 +8,12 @@ import random
 import re
 from typing import Optional, Tuple
 from datetime import datetime
+from urllib.parse import urlparse
 
+from app.config import config
 from app.services.pt_site_service import db
 
 logger = logging.getLogger(__name__)
-
-# 解析策略：每个站点页面结构不同，定义解析规则
-# 规则格式：(指标名, 正则表达式列表, 单位换算)
-# 数据解析会尝试多个正则，取第一个匹配成功的
 
 
 def _parse_bytes(text: str) -> int:
@@ -28,7 +23,6 @@ def _parse_bytes(text: str) -> int:
     text = text.strip().upper().replace(",", "")
     match = re.match(r"([\d.]+)\s*(TB|GB|MB|KB|B|TIB|GIB|MIB|KIB)", text)
     if not match:
-        # 尝试纯数字
         try:
             return int(float(text))
         except ValueError:
@@ -49,7 +43,6 @@ def _parse_number(text: str) -> float:
     if not text:
         return 0
     text = text.strip().replace(",", "").replace(" ", "").upper()
-    # 处理后缀
     multiplier = 1
     if text.endswith("K"):
         multiplier = 1000
@@ -64,9 +57,8 @@ def _parse_number(text: str) -> float:
     return float(match.group()) * multiplier if match else 0
 
 
-# 通用的数据提取模式
-# 优先匹配紧凑格式（NexusPHP风格: "上传量: 4.509 TB 下载量: 640.81 GB 分享率: 7.205"）
-DATA_PATTERNS = {
+# 通用标签式正则（对大部分 NexusPHP 站有效）
+DEFAULT_PATTERNS = {
     "upload": [
         r"上传量\s*[：:]\s*([\d.,]+\s*(?:TB|GB|MB|KB|TiB|GiB|MiB|KiB|B))",
         r"上传[：:]\s*([\d.,]+\s*(?:TB|GB|MB|KB|TiB|GiB|MiB|KiB|B))",
@@ -88,10 +80,10 @@ DATA_PATTERNS = {
     ],
     "bonus_points": [
         r"茉莉[：:]\s*([\d.,]+\s*K?)",
+        r"魔力值\s*(?:\[[^\]]*\])?\s*[：:]\s*([\d.,]+)",
         r"魔力值[：:]\s*([\d.,]+\s*K?)",
         r"鲸币[^：:]*[：:]\s*([\d.,]+\s*K?)",
         r"Bonus[：:]\s*([\d.,]+\s*K?)",
-        r"猫粮[：:]\s*([\d.,]+\s*K?)",
         r"银币[：:]\s*([\d.,]+\s*K?)",
         r"金币[：:]\s*([\d.,]+\s*K?)",
         r"积分\s*[：:]\s*([\d.,]+\s*K?)",
@@ -103,6 +95,7 @@ DATA_PATTERNS = {
         r"做种[：:]\s*(\d+)",
         r"当前做种\s*[：:]\s*(\d+)",
         r"Seeding[：:]\s*(\d+)",
+        r"\|\s*(\d+)\s+\d+",
     ],
     "leeching_count": [
         r"当前活动\s*[：:]\s*\d+\s+(\d+)",
@@ -114,64 +107,121 @@ DATA_PATTERNS = {
     ],
 }
 
+FIELD_KEYS = ["upload", "download", "share_ratio", "seed_points", "bonus_points", "seeding_count", "leeching_count"]
 
-def parse_page_data(page_text: str) -> dict:
-    """从页面文本中解析 PT 数据"""
-    result = {
-        "upload_bytes": 0,
-        "download_bytes": 0,
-        "share_ratio": 0.0,
-        "seed_points": 0.0,
-        "bonus_points": 0.0,
-        "seeding_count": 0,
-        "leeching_count": 0,
-        "raw_data": {},
-    }
 
-    # 移除多余空白，方便正则匹配
-    text = re.sub(r"\s+", " ", page_text)
+# ========== 站点解析规则（硬编码，按域名前缀匹配） ==========
 
-    # 先尝试 NexusPHP 紧凑格式（无标签，如 audiences.me）
-    # 格式: {ratio} {upload TB/GB} {download TB/GB} {bonus} {seed_points} ↑ {seeding} / ↓ {leeching}
-    nexus_match = re.search(
+def _parse_audiences_me(text: str) -> Optional[dict]:
+    """audiences.me — NexusPHP 紧凑格式，无标签"""
+    m = re.search(
         r"([\d.]+)\s+([\d.,]+\s*(?:TB|GB|MB))\s+([\d.,]+\s*(?:TB|GB|MB))\s+([\d.,]+)\s+([\d.,]+)\s*↑\s*([\d,]+)\s*/\s*↓\s*([\d,]+)",
         text,
     )
-    if nexus_match:
-        result["share_ratio"] = float(nexus_match.group(1))
-        result["upload_bytes"] = _parse_bytes(nexus_match.group(2))
-        result["download_bytes"] = _parse_bytes(nexus_match.group(3))
-        result["bonus_points"] = _parse_number(nexus_match.group(4))
-        result["seed_points"] = _parse_number(nexus_match.group(5))
-        result["seeding_count"] = int(nexus_match.group(6).replace(",", ""))
-        result["leeching_count"] = int(nexus_match.group(7).replace(",", ""))
-        result["raw_data"] = {
-            "share_ratio": nexus_match.group(1),
-            "upload": nexus_match.group(2),
-            "download": nexus_match.group(3),
-            "bonus_points": nexus_match.group(4),
-            "seed_points": nexus_match.group(5),
-            "seeding_count": nexus_match.group(6),
-            "leeching_count": nexus_match.group(7),
-            "format": "nexusphp_compact",
-        }
-        return result
+    if not m:
+        return None
+    return {
+        "upload_bytes": _parse_bytes(m.group(2)),
+        "download_bytes": _parse_bytes(m.group(3)),
+        "share_ratio": float(m.group(1)),
+        "bonus_points": _parse_number(m.group(4)),
+        "seed_points": _parse_number(m.group(5)),
+        "seeding_count": int(m.group(6).replace(",", "")),
+        "leeching_count": int(m.group(7).replace(",", "")),
+    }
 
-    # 回退到带标签的通用格式
-    # bonus_points 优先匹配具体名称（茉莉/魔力值/鲸币），seed_points 匹配通用"积分"
-    # 先做 bonus — 因为 bonus 的关键词更具体，不会和种子积分混淆
-    for pattern in DATA_PATTERNS["bonus_points"]:
+
+def _parse_keepfrds(text: str) -> Optional[dict]:
+    """pt.keepfrds.com — 魔力值带 [使用] 按钮，做种数用 | x y 格式"""
+    # 上传/下载/分享率用通用正则，仅覆盖魔力值和做种数
+    bonus_match = re.search(r"魔力值\s*(?:\[[^\]]*\])?\s*[：:]\s*([\d.,]+)", text)
+    seed_match = re.search(r"\|\s*(\d+)\s+\d+", text)
+    if not bonus_match and not seed_match:
+        return None
+    return {
+        "bonus_points": _parse_number(bonus_match.group(1)) if bonus_match else 0,
+        "seeding_count": int(seed_match.group(1)) if seed_match else 0,
+    }
+
+
+def _parse_pterclub(text: str) -> Optional[dict]:
+    """pterclub.net (猫站) — 积分叫"猫粮"而非"魔力值"，做种/下载格式为 Torrents seeding X Torrents leeching Y"""
+    bonus_match = re.search(r"猫粮.*?[：:]\s*([\d.,]+)", text)
+    seed_match = re.search(r"Torrents?\s*seeding\s*(\d+)", text, re.IGNORECASE)
+    leech_match = re.search(r"Torrents?\s*leeching\s*(\d+)", text, re.IGNORECASE)
+    if not bonus_match and not seed_match:
+        return None
+    return {
+        "bonus_points": _parse_number(bonus_match.group(1)) if bonus_match else 0,
+        "seeding_count": int(seed_match.group(1)) if seed_match else 0,
+        "leeching_count": int(leech_match.group(1)) if leech_match else 0,
+    }
+
+
+def _parse_hhclub(text: str) -> Optional[dict]:
+    """HHCLUB (憨憨) — 首页数据不全，需跳转个人中心；积分叫"憨豆" """
+    bonus_match = re.search(r"憨豆[：:]\s*([\d.,]+)", text)
+    seed_points_match = re.search(r"做种积分[：:]\s*([\d.,]+)", text)
+    seed_match = re.search(r"做种数\s*(\d+)", text)
+    leech_match = re.search(r"下载数\s*(\d+)", text)
+    return {
+        "bonus_points": _parse_number(bonus_match.group(1)) if bonus_match else 0,
+        "seed_points": _parse_number(seed_points_match.group(1)) if seed_points_match else 0,
+        "seeding_count": int(seed_match.group(1)) if seed_match else 0,
+        "leeching_count": int(leech_match.group(1)) if leech_match else 0,
+    }
+
+
+# 域名前缀 -> 解析函数
+_SITE_PARSERS = [
+    ("audiences.me", _parse_audiences_me),
+    ("pt.keepfrds.com", _parse_keepfrds),
+    ("pterclub.net", _parse_pterclub),
+    ("hhanclub", _parse_hhclub),
+]
+
+# 需要跳转到个人中心再解析的站点：域名前缀 -> (查找链接的选择器, 备用 href 正则)
+_NAVIGATE_TO_USER = {
+    "hhanclub": (r'个人中心', r'userdetails\.php\?id=\d+'),
+}
+
+
+def _get_domain(url: str) -> str:
+    """从 URL 提取域名"""
+    try:
+        return urlparse(url).netloc.lower()
+    except Exception:
+        return ""
+
+
+def _get_site_parser(url: str):
+    """根据站点 URL 返回专属解析函数"""
+    domain = _get_domain(url)
+    for prefix, parser in _SITE_PARSERS:
+        if prefix in domain:
+            return parser
+    return None
+
+
+def _parse_default(text: str) -> dict:
+    """默认标签式解析"""
+    result = {
+        "upload_bytes": 0, "download_bytes": 0, "share_ratio": 0.0,
+        "seed_points": 0.0, "bonus_points": 0.0,
+        "seeding_count": 0, "leeching_count": 0,
+    }
+
+    # bonus_points 优先
+    for pattern in DEFAULT_PATTERNS["bonus_points"]:
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
-            value = match.group(1).strip()
-            result["bonus_points"] = _parse_number(value)
-            result["raw_data"]["bonus_points"] = value
+            result["bonus_points"] = _parse_number(match.group(1))
             break
 
-    for key, patterns in DATA_PATTERNS.items():
+    for key in FIELD_KEYS:
         if key == "bonus_points":
-            continue  # 已处理
-        for pattern in patterns:
+            continue
+        for pattern in DEFAULT_PATTERNS[key]:
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
                 value = match.group(1).strip()
@@ -181,10 +231,67 @@ def parse_page_data(page_text: str) -> dict:
                     result[key] = _parse_number(value)
                 elif key in ("seeding_count", "leeching_count"):
                     result[key] = int(_parse_number(value))
-                result["raw_data"][key] = value
                 break
 
     return result
+
+
+def parse_page_data(page_text: str, site_url: str = "") -> dict:
+    """从页面文本中解析 PT 数据，根据 URL 域名选择解析器"""
+    text = re.sub(r"\s+", " ", page_text)
+
+    # 1. 检查是否有域名专属解析器
+    parser = _get_site_parser(site_url) if site_url else None
+    if parser:
+        parsed = parser(text)
+        if parsed:
+            # 专属解析器可能只返回部分字段，用默认解析补全
+            defaults = _parse_default(text)
+            defaults.update(parsed)
+            return {**defaults, "raw_data": {"site_parser": parser.__name__}}
+
+    # 2. 兜底：默认标签式
+    return {**_parse_default(text), "raw_data": {}}
+
+
+
+async def _navigate_to_user_center(page, site_name: str, link_text: str, href_pattern: str):
+    """
+    在页面中查找"个人中心"链接并点击跳转，等待页面加载后返回。
+    """
+    # 方法1：按链接文本查找（innerText 包含指定文字）
+    try:
+        link = page.locator(f'a:has-text("{link_text}")').first
+        if await link.count() > 0:
+            logger.info(f"[PT] {site_name} 点击「{link_text}」跳转到个人中心...")
+            await link.click(timeout=5000)
+            await asyncio.sleep(random.uniform(2, 4))
+            return
+    except Exception:
+        pass
+
+    # 方法2：按 href 正则查找
+    try:
+        links = await page.evaluate(f"""
+            () => {{
+                const anchors = document.querySelectorAll('a[href]');
+                for (const a of anchors) {{
+                    if (/{href_pattern}/.test(a.getAttribute('href'))) {{
+                        return a.getAttribute('href');
+                    }}
+                }}
+                return null;
+            }}
+        """)
+        if links:
+            logger.info(f"[PT] {site_name} 跳转到 {links} ...")
+            await page.goto(links, wait_until="domcontentloaded", timeout=15000)
+            await asyncio.sleep(random.uniform(2, 4))
+            return
+    except Exception:
+        pass
+
+    logger.warning(f"[PT] {site_name} 未找到个人中心链接")
 
 
 async def monitor_site(site: dict, simulate_browsing: bool = True) -> dict:
@@ -296,13 +403,23 @@ async def monitor_site(site: dict, simulate_browsing: bool = True) -> dict:
             if simulate_browsing:
                 await _simulate_browsing(page)
 
+            # 某些站点首页数据不全，需要跳转到个人中心
+            domain = _get_domain(site["url"])
+            for prefix, (link_text, _href_pattern) in _NAVIGATE_TO_USER.items():
+                if prefix in domain:
+                    try:
+                        await _navigate_to_user_center(page, site_name, link_text, _href_pattern)
+                    except Exception as e:
+                        logger.warning(f"[PT] {site_name} 跳转个人中心失败: {e}，使用首页数据")
+                    break
+
             # 获取页面文本内容用于解析
             page_text = await page.evaluate("() => document.body.innerText")
             # 也获取 title 用于辅助判断
             page_title = await page.title()
 
             # 解析数据
-            parsed = parse_page_data(page_text)
+            parsed = parse_page_data(page_text, site["url"])
             parsed["raw_data"]["page_title"] = page_title
             parsed["raw_data"]["url"] = page.url  # 记录实际跳转后的 URL
 

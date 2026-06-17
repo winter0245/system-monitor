@@ -6,6 +6,7 @@ services:
     ports:
       - "8900:8900"
     volumes:
+      # 首次运行前请先创建 config.yaml：cp config_example.yaml config.yaml
       - ./config.yaml:/app/config.yaml
       - ./cache:/app/cache
     network_mode: host
