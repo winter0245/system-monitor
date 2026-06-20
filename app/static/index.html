@@ -21,6 +21,7 @@
   --accent-cyan: #00bcd4;
   --border-color: #2a3a5e;
   --tab-active: #2196f3;
+  --header-height: 46px;
 }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -38,6 +39,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
+  height: var(--header-height);
 }
 .header-title { font-size: 18px; font-weight: 600; color: var(--accent-cyan); }
 .header-status { display: flex; gap: 16px; font-size: 12px; color: var(--text-secondary); }
@@ -50,6 +52,9 @@ body {
   border-bottom: 1px solid var(--border-color);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  position: sticky;
+  top: var(--header-height);
+  z-index: 99;
   /* 隐藏滚动条 */
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -281,11 +286,37 @@ body {
 .pt-log-section{background:var(--bg-card);border-radius:12px;padding:16px;border:1px solid var(--border-color);}
 .pt-log-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
 .pt-log-title{font-size:14px;font-weight:600;}
-.pt-log-table{width:100%;border-collapse:collapse;}
-.pt-log-table th{text-align:left;padding:8px;color:var(--text-secondary);font-weight:500;border-bottom:1px solid var(--border-color);white-space:nowrap;}
-.pt-log-table td{padding:8px;border-bottom:1px solid rgba(42,58,94,.4);white-space:nowrap;}
 .pt-log-success{color:#81c784;}
 .pt-log-fail{color:#ef9a9a;}
+/* 日志卡片列表 */
+.pt-log-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.pt-log-card{background:var(--bg-secondary);border-radius:10px;padding:12px 14px;border:1px solid var(--border-color);transition:background 0.2s;}
+.pt-log-card:hover{background:var(--bg-card-hover);}
+.pt-log-card.success{border-color:rgba(76,175,80,0.25);}
+.pt-log-card.fail{border-color:rgba(244,67,54,0.25);}
+.pt-log-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.pt-log-card-site{font-size:14px;font-weight:600;color:var(--text-primary);}
+.pt-log-card-result{font-size:12px;font-weight:500;padding:2px 8px;border-radius:10px;}
+.pt-log-card.success .pt-log-card-result{background:#1b5e20;color:#81c784;}
+.pt-log-card.fail .pt-log-card-result{background:#b71c1c;color:#ef9a9a;}
+.pt-log-card-body{display:flex;flex-direction:column;gap:4px;}
+.pt-log-card-time{font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;}
+.pt-log-card-detail{font-size:12px;color:var(--accent-cyan);line-height:1.4;word-break:break-all;}
+@media(max-width:768px){
+  .pt-log-cards{grid-template-columns:1fr;}
+}
+@media(max-width:600px){
+  .pt-log-section{padding:12px 10px;}
+  .pt-log-card{padding:10px 12px;border-radius:8px;}
+  .pt-log-card-site{font-size:13px;}
+  .pt-log-card-detail{font-size:11px;}
+}
+/* 日志站点快捷筛选 */
+.pt-log-filter{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;}
+.pt-log-filter::-webkit-scrollbar{display:none;}
+.pt-log-filter-tab{padding:4px 10px;border-radius:12px;font-size:11px;cursor:pointer;white-space:nowrap;background:var(--bg-secondary);color:var(--text-secondary);border:1px solid transparent;transition:all 0.2s;flex-shrink:0;}
+.pt-log-filter-tab:hover{color:var(--text-primary);border-color:var(--border-color);}
+.pt-log-filter-tab.active{background:var(--accent-blue);color:white;border-color:var(--accent-blue);}
 .pt-schedule-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500;background:#1a237e;color:#9fa8da;}
 .pt-empty{text-align:center;padding:40px;color:var(--text-secondary);}
 .pt-empty-icon{font-size:48px;margin-bottom:12px;}
@@ -1085,7 +1116,22 @@ function renderPtTab() {
     </div>`;
   }
 
-  // 访问日志 — 分两个 tab: Playwright 访问 / 链接跳转
+  // 操作记录 — 卡片式布局
+  // 提取所有有日志的站点作为快捷筛选
+  const logSiteIds = [...new Set((window._ptSites || []).map(s => s.id))];
+  let siteFilterHtml = '';
+  if (logSiteIds.length > 0) {
+    const activeFilter = window._ptLogSite || 'all';
+    siteFilterHtml = `<div class="pt-log-filter" id="ptLogSiteFilter">
+      <div class="pt-log-filter-tab${activeFilter==='all'?' active':''}" onclick="filterPtLogSite('all')">全部</div>
+      ${logSiteIds.map(sid => {
+        const s = (window._ptSites||[]).find(x => x.id === sid);
+        const name = s ? s.name : sid;
+        return `<div class="pt-log-filter-tab${activeFilter===sid?' active':''}" onclick="filterPtLogSite('${sid}')">${name}</div>`;
+      }).join('')}
+    </div>`;
+  }
+
   html += `<div class="pt-log-section">
     <div class="pt-log-header">
       <span class="pt-log-title">📋 操作记录</span>
@@ -1094,11 +1140,9 @@ function renderPtTab() {
         <div class="news-tab${current==='redirect'?' active':''}" onclick="switchPtLogTab('redirect')">🔗 链接跳转</div>
       </div>
     </div>
-    <div style="overflow-x:auto;min-height:60px" id="ptLogContent">
-      <table class="pt-log-table">
-        <thead><tr><th>时间</th><th>站点</th><th>结果</th><th>详情</th></tr></thead>
-        <tbody id="ptLogBody"><tr><td colspan="4" style="text-align:center;color:var(--text-secondary)">加载中...</td></tr></tbody>
-      </table>
+    ${siteFilterHtml}
+    <div class="pt-log-cards" id="ptLogCards">
+      <div class="pt-empty" style="padding:20px;grid-column:1/-1;">加载中...</div>
     </div>
   </div>`;
 
@@ -1118,39 +1162,62 @@ async function switchPtLogTab(type) {
   loadPtLogs(type);
 }
 
+function filterPtLogSite(siteId) {
+  window._ptLogSite = siteId;
+  // 更新筛选标签样式
+  document.querySelectorAll('#ptLogSiteFilter .pt-log-filter-tab').forEach(t => t.classList.toggle('active', false));
+  const target = document.querySelector(`#ptLogSiteFilter .pt-log-filter-tab[onclick="filterPtLogSite('${siteId}')"]`);
+  if (target) target.classList.add('active');
+  // 显示/隐藏卡片
+  document.querySelectorAll('.pt-log-card').forEach(card => {
+    card.style.display = (siteId === 'all' || card.dataset.site === siteId) ? '' : 'none';
+  });
+}
+
 async function loadPtLogs(type) {
-  const tbody = document.getElementById('ptLogBody');
-  if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary)">加载中...</td></tr>';
+  const container = document.getElementById('ptLogCards');
+  if (!container) return;
+  container.innerHTML = '<div class="pt-empty" style="padding:20px;grid-column:1/-1;">加载中...</div>';
   try {
     const resp = await fetch(`/api/pt/logs?limit=50`);
     const data = await resp.json();
     let logs = data.logs || [];
     if (type === 'playwright') {
-      // Playwright 访问 = 定时(scheduled) + 手动刷新(manual)
       logs = logs.filter(l => l.visit_type === 'scheduled' || l.visit_type === 'manual');
     } else {
-      // 链接跳转
       logs = logs.filter(l => l.visit_type === 'redirect');
     }
     const sites = window._ptSites || [];
     if (logs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:20px;">暂无记录</td></tr>';
+      container.innerHTML = '<div class="pt-empty" style="padding:20px;grid-column:1/-1;">暂无记录</div>';
       return;
     }
-    tbody.innerHTML = logs.map(log => {
+    container.innerHTML = logs.map(log => {
       const siteName = sites.find(s => s.id === log.site_id)?.name || log.site_id;
-      const resultHtml = log.success ? '<span class="pt-log-success">✓ 成功</span>' : '<span class="pt-log-fail">✗ 失败</span>';
+      const isSuccess = log.success;
       const dateStr = log.created_at ? formatLogTime(log.created_at) : '';
-      return `<tr>
-        <td>${dateStr}</td>
-        <td>${siteName}</td>
-        <td>${resultHtml}</td>
-        <td style="color:var(--text-secondary);max-width:200px;overflow:hidden;text-overflow:ellipsis;">${log.details || log.message || ''}</td>
-      </tr>`;
+      const detailText = log.details || log.message || '';
+      const visitLabel = log.visit_type === 'scheduled' ? '定时' : log.visit_type === 'manual' ? '手动' : '跳转';
+      return `<div class="pt-log-card ${isSuccess ? 'success' : 'fail'}" data-site="${log.site_id}">
+        <div class="pt-log-card-header">
+          <span class="pt-log-card-site">${siteName}</span>
+          <span class="pt-log-card-result">${isSuccess ? '✓ 成功' : '✗ 失败'} · ${visitLabel}</span>
+        </div>
+        <div class="pt-log-card-body">
+          <div class="pt-log-card-time">🕐 ${dateStr}</div>
+          ${detailText ? `<div class="pt-log-card-detail">${detailText}</div>` : ''}
+        </div>
+      </div>`;
     }).join('');
+    // 应用当前站点筛选
+    const activeSite = window._ptLogSite || 'all';
+    if (activeSite !== 'all') {
+      document.querySelectorAll('.pt-log-card').forEach(card => {
+        card.style.display = card.dataset.site === activeSite ? '' : 'none';
+      });
+    }
   } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--accent-red)">加载失败</td></tr>';
+    container.innerHTML = '<div class="pt-empty" style="padding:20px;grid-column:1/-1;color:var(--accent-red)">加载失败</div>';
   }
 }
 
